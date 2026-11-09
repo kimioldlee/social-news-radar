@@ -1,0 +1,76 @@
+---
+name: social-news-radar
+description: 采集中国官媒与融媒体的社会民生新闻（民生痛点、深度调查、舆论监督、个案维权、政策服务），生成可筛选的单文件离线看板与 CSV 选题库。当任务涉及抓取/汇总/监测社会新闻、找民生调查选题、做新闻日报素材、官媒融媒体新闻看板，或提到澎湃、封面新闻、上游新闻、九派新闻、极目新闻、人民日报、央视网、工人日报、中国记协「我的代表作」时使用本技能。This skill should be used when the user needs to crawl, aggregate, monitor, or visualize Chinese social-interest and public-livelihood news from official media and converged-media outlets.
+agent_created: true
+---
+
+# 社会民生新闻雷达（Social News Radar）
+
+## Overview
+
+把中国官媒与融媒体的社会民生报道采集为结构化数据，并生成可筛选的单文件离线看板。内置 21 个可配置源、五套站点解析规则、6 组民生痛点关键词、跨源同题去重与 CSV 导出。仅依赖 Python 标准库，无需第三方包或密钥。
+
+## 何时使用
+
+- 需要抓取、汇总、监测官媒 / 央媒 / 地方融媒体的社会民生新闻
+- 需要找深度调查、舆论监督、民生痛点、个案维权类选题
+- 需要生成新闻选题看板、日报素材、结构化 CSV 数据表
+- 需要把新闻采集接入定时自动化或其它分析系统
+- 用户提到澎湃新闻、封面新闻、上游新闻、九派新闻、极目新闻、人民日报、央视网、工人日报、中国记协「我的代表作」
+
+## 快速开始
+
+在目标工作目录执行（`scripts/collect_news.py` 为本技能包内脚本）：
+
+```
+python <skill-dir>/scripts/collect_news.py --out .
+python <skill-dir>/scripts/collect_news.py --out . --no-fetch
+python <skill-dir>/scripts/collect_news.py --out . --init --days 7 --max-per-source 12
+```
+
+首次运行自动把 `assets/news_data.template.json` 复制为输出目录的 `news_data.json`。产出三个文件，全部落在 `--out` 目录、不污染技能包：
+
+| 文件 | 用途 |
+|---|---|
+| `news_data.json` | 单一数据源：示例样本 + 实时抓取 + 源/关键词/渠道配置 |
+| `社会民生新闻样本.csv` | UTF-8 BOM，Excel 直接打开 |
+| `社会民生新闻抓取看板.html` | 单文件离线看板，双击即可浏览，无需联网 |
+
+## 工作流
+
+1. **初始化**：首次运行自动复制模板；`--init` 可重置为模板数据（会覆盖已有 `news_data.json`）。
+2. **配置**：编辑输出目录的 `news_data.json`。`sources` 控制启用哪些源及 `parser` / `mode` / `recent_only`；`keywords` 是 6 组民生痛点词；`channels` 是看板里的可点入口分组；`curated` 是人工精选样本（可替换或清空）。
+3. **采集**：运行脚本。每源间隔 1.2 秒，带完整浏览器头；失败源自动跳过并提示，不影响其它源。
+4. **查看**：打开 HTML 看板，按类型 / 报道形态 / 主题标签筛选、全文搜索、导出当前筛选结果为 CSV。
+5. **复用**：`--no-fetch` 只重建看板与 CSV；配合定时任务即可每日更新。`--days N` 控制时间窗，`--max-per-source N` 控制单源条数。
+
+## 内置解析规则摘要
+
+| parser | 站点 | 主要入口 |
+|---|---|---|
+| `thepaper` | 澎湃新闻 | 8 个 `list_` 社会民生栏目页 |
+| `thecover` | 封面新闻 | 首页 + 两个「封面深镜」调查专题页 |
+| `cqcb` | 上游新闻 | `/channel/29` 调查、`/14` 法治、`/6` 评论 |
+| `ctdsb` | 极目新闻 | `/c1716` 世相、`/c1738` 消费、`/c1659` 健康、`/c1673` 科教 |
+| `jiupai_sina` | 九派新闻 | 官方微博在新浪新闻的 SSR 聚合页 |
+| `rss` / `homepage` | 通用兜底 | RSS 或页面中文长标题链接 |
+
+完整的 URL 格式、栏目 ID 表、反爬经验与扩展步骤见 `references/sources.md`。
+
+## 资源
+
+- `scripts/collect_news.py` — 采集、标题清洗、去重、构建看板与 CSV 的一体化脚本
+- `references/sources.md` — 站点结构、栏目清单、已知坑、新增站点步骤
+- `assets/news_data.template.json` — 数据源模板（含 12 条示例精选稿）
+
+## 关键约束
+
+- **合规**：仅抓各站公开栏目页 / RSS，低频、带完整 UA，遵守 robots 与版权声明；结果仅供选题浏览，转载遵循原媒体声明。
+- **SPA 站点**：九派官网是 React 内容后台，无面向读者的列表页，默认改走官方微博聚合页；换源前先确认目标页是否服务端渲染。
+- **异步搜索页**：澎湃 `searchResult?id=` 是客户端异步渲染，Python 直抓拿不到结果，改用服务端渲染的 `list_` 栏目页；浏览器类工具可直接查看搜索页。
+- **标题噪音**：列表页常把「来源 + 日期 + 阅读量 / 栏目名」塞进同一个 `<a>`，脚本统一清洗；跨源同题按标题前 18 字归一化去重。
+- **文件占用**：输出 CSV 被编辑器占用时，自动写入 `社会民生新闻样本_最新.csv` 副本并在控制台提示，不覆盖被锁文件。
+
+## 扩展新站
+
+阅读 `references/sources.md` 的「新增站点」小节，按 parser 接口实现一个函数并注册到 `PARSERS`，随后在 `news_data.json` 的 `sources` 增加一条配置即可。

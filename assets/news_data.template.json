@@ -1,0 +1,667 @@
+{
+  "updated": "模板",
+  "scope": "官媒 / 央媒 + 地方融媒体的社会民生类报道；curated 为示例选题，可按需替换",
+  "curated": [
+    {
+      "date": "2026-11-02",
+      "media": "央视网",
+      "type": "官媒",
+      "column": "央视网评论·深度报道",
+      "title": "救命血，为何一血难求？",
+      "form": "深度调查",
+      "topics": [
+        "医疗",
+        "用血紧张",
+        "灰色产业链",
+        "献血法"
+      ],
+      "url": "https://opinion.cctv.com/2026/11/02/ARTIT0lzTdQvKB74y75ASyao261102.shtml",
+      "note": "上一轮澎湃号同题稿的官媒原发；作者李绍飞、杨瑞、彭俊、杨兆荃、崔艺；入选中国记协『我的代表作』第131期"
+    },
+    {
+      "date": "2026-11-02",
+      "media": "澎湃号·媒体（央视网）",
+      "type": "融媒",
+      "column": "澎湃号·媒体",
+      "title": "口腔冒出个小血泡，58岁癌症母亲血小板降到1……女儿被迫买了张献血证",
+      "form": "深度调查",
+      "topics": [
+        "医疗",
+        "用血紧张",
+        "灰色产业链"
+      ],
+      "url": "https://www.thepaper.cn/newsDetail_forward_34386884",
+      "note": "官媒原发稿在平台号的同步版本，页面带『仅提供信息发布平台』特别声明；印证官媒→平台号的内容链路"
+    },
+    {
+      "date": "2026-07-27",
+      "media": "萧山网（引经济观察报）",
+      "type": "融媒",
+      "column": "健康·医疗新闻",
+      "title": "血库告急，谁来为生命『续航』？",
+      "form": "深度调查",
+      "topics": [
+        "医疗",
+        "用血紧张",
+        "血头",
+        "献血证"
+      ],
+      "url": "https://www.xsnet.cn/health/ylxw/202607/t20260727_7583446.shtml",
+      "note": "梳理经济观察报调查：输血门槛下调、手术延期、献血证黑市单张2000余元"
+    },
+    {
+      "date": "2026-01-31",
+      "media": "央视网",
+      "type": "官媒",
+      "column": "新闻·民生",
+      "title": "景区免票遭拒，献血者权益『悬空』何时解？",
+      "form": "深度调查",
+      "topics": [
+        "医疗",
+        "献血者权益",
+        "政策落地"
+      ],
+      "url": "https://big5.cctv.com/gate/big5/news.cctv.cn/2026/01/31/ARTIlQ8hjcNU21YPVBHrKn24260130.shtml",
+      "note": "同题材的官媒追踪：三免政策、异地报销、优先用血落地难"
+    },
+    {
+      "date": "2026-11-02",
+      "media": "山西日报",
+      "type": "官媒",
+      "column": "评论",
+      "title": "热血的温度需要制度的刻度",
+      "form": "评论",
+      "topics": [
+        "医疗",
+        "献血法",
+        "制度保障"
+      ],
+      "url": "https://nginx-sxrb.app.sxrbw.com/sxrb/site1/m/c8/a2089045.html",
+      "note": "地方党报对献血法修订的评论跟进"
+    },
+    {
+      "date": "2026-11-02",
+      "media": "工人日报",
+      "type": "官媒",
+      "column": "权益·深度",
+      "title": "恶意调岗降薪、架空工作权限、随意加重考核……职场『软裁员』引争议",
+      "form": "深度调查",
+      "topics": [
+        "劳动权益",
+        "软裁员",
+        "维权举证"
+      ],
+      "url": "https://finance.sina.com.cn/jjxw/2026-11-02/doc-inixiuew7228516.shtml",
+      "note": "典型『个体故事+专家释法+制度建议』的民生深度稿结构"
+    },
+    {
+      "date": "2026-11-03",
+      "media": "工人日报",
+      "type": "官媒",
+      "column": "权益·热点解读",
+      "title": "员工休息日爬山5小时没回工作消息被开除！非工作时间『待命』和加班的界限在哪？",
+      "form": "个案维权",
+      "topics": [
+        "劳动权益",
+        "离线权",
+        "隐形加班"
+      ],
+      "url": "https://finance.sina.com.cn/jjxw/2026-11-03/doc-inixmxcw6758695.shtml",
+      "note": "热点个案 + 律师问答式解读，易被融媒体转载"
+    },
+    {
+      "date": "2026-11-07",
+      "media": "央视《焦点访谈》",
+      "type": "官媒",
+      "column": "焦点访谈",
+      "title": "免费『鉴宝』 陷阱重重",
+      "form": "舆论监督",
+      "topics": [
+        "老年诈骗",
+        "私域直播",
+        "消费维权"
+      ],
+      "url": "https://tv.cctv.com/2026/11/07/VIDE6Q3pKLjTtYxjqhcpabft261107.shtml",
+      "note": "央视调查类节目，聚焦老年群体被私域直播围猎"
+    },
+    {
+      "date": "2026-11-06",
+      "media": "新京报 / 中国新闻周刊 / 南方都市报",
+      "type": "融媒",
+      "column": "调查·评论",
+      "title": "河北一乡干部捅伤两村民，潜逃期间竟连续15年吃空饷140余万元",
+      "form": "舆论监督",
+      "topics": [
+        "基层治理",
+        "法治",
+        "追问问责"
+      ],
+      "url": "https://new.qq.com/rain/a/20261106A0972B00",
+      "note": "多家媒体同题跟进，典型舆论监督选题"
+    },
+    {
+      "date": "2026-11-05",
+      "media": "澎湃新闻",
+      "type": "融媒",
+      "column": "澎湃人物·弦外",
+      "title": "弦外｜面对数百万严重精神障碍患者，一个管理系统如何更高效",
+      "form": "深度调查",
+      "topics": [
+        "公共健康",
+        "基层治理",
+        "制度反思"
+      ],
+      "url": "https://m.thepaper.cn/newsDetail_forward_34424730",
+      "note": "『被误报为严重精神障碍患者后，想退出系统的人』记者手记；上一轮首页热榜同题"
+    },
+    {
+      "date": "2026-11-01",
+      "media": "九派新闻",
+      "type": "融媒",
+      "column": "财经·民生",
+      "title": "杭州一健身房倒闭不退款，此前用个人账户收款，负责人多次被限高",
+      "form": "个案维权",
+      "topics": [
+        "预付式消费",
+        "消费维权"
+      ],
+      "url": "https://dy.163.com/article/LAM4B3UA0530L9R9.html",
+      "note": "预付资金监管类民生痛点"
+    },
+    {
+      "date": "2026-11-07",
+      "media": "封面新闻 / 上游新闻 / 九派 / 澎湃",
+      "type": "融媒",
+      "column": "社会·医疗安全",
+      "title": "输液后发现药品过期两月，医院通报：患者已谅解、责任人被处分",
+      "form": "通报回应",
+      "topics": [
+        "医疗安全",
+        "医院管理",
+        "官方通报"
+      ],
+      "url": "https://www.cqcb.com/news/15/2026-11-07/6251386.html",
+      "note": "封面新闻首发 → 上游/九派/澎湃多平台接力，典型融媒传播链"
+    }
+  ],
+  "crawled": [],
+  "sources": [
+    {
+      "name": "澎湃·直击现场",
+      "type": "thepaper_list",
+      "url": "https://www.thepaper.cn/list_25428",
+      "column": "直击现场",
+      "enabled": true,
+      "parser": "thepaper",
+      "media": "澎湃"
+    },
+    {
+      "name": "澎湃·澎湃人物",
+      "type": "thepaper_list",
+      "url": "https://www.thepaper.cn/list_25427",
+      "column": "澎湃人物",
+      "enabled": true,
+      "parser": "thepaper",
+      "media": "澎湃"
+    },
+    {
+      "name": "澎湃·绿政公署",
+      "type": "thepaper_list",
+      "url": "https://www.thepaper.cn/list_25425",
+      "column": "绿政公署",
+      "enabled": true,
+      "parser": "thepaper",
+      "media": "澎湃"
+    },
+    {
+      "name": "澎湃·一号专案",
+      "type": "thepaper_list",
+      "url": "https://www.thepaper.cn/list_25424",
+      "column": "一号专案",
+      "enabled": true,
+      "parser": "thepaper",
+      "media": "澎湃"
+    },
+    {
+      "name": "澎湃·法治中国",
+      "type": "thepaper_list",
+      "url": "https://www.thepaper.cn/list_25426",
+      "column": "法治中国",
+      "enabled": true,
+      "parser": "thepaper",
+      "media": "澎湃"
+    },
+    {
+      "name": "澎湃·浦江头条",
+      "type": "thepaper_list",
+      "url": "https://www.thepaper.cn/list_25422",
+      "column": "浦江头条",
+      "enabled": true,
+      "parser": "thepaper",
+      "media": "澎湃"
+    },
+    {
+      "name": "澎湃·暖闻湃",
+      "type": "thepaper_list",
+      "url": "https://www.thepaper.cn/list_26911",
+      "column": "暖闻湃",
+      "enabled": true,
+      "parser": "thepaper",
+      "media": "澎湃"
+    },
+    {
+      "name": "澎湃·中国政库",
+      "type": "thepaper_list",
+      "url": "https://www.thepaper.cn/list_25462",
+      "column": "中国政库",
+      "enabled": true,
+      "parser": "thepaper",
+      "media": "澎湃"
+    },
+    {
+      "name": "人民网·社会频道RSS",
+      "type": "rss",
+      "url": "http://www.people.com.cn/rss/society.xml",
+      "column": "社会频道",
+      "enabled": false,
+      "note": "该RSS实测仍可访问但条目停留在2025年，默认关闭，仅作RSS源格式示例",
+      "parser": "rss",
+      "media": "人民网"
+    },
+    {
+      "name": "中工网",
+      "type": "homepage",
+      "url": "https://www.workercn.cn/",
+      "column": "首页",
+      "enabled": false,
+      "media": "中工网"
+    },
+    {
+      "name": "封面·首页",
+      "url": "https://www.thecover.cn/",
+      "parser": "thecover",
+      "column": "首页要闻",
+      "media": "封面新闻",
+      "media_type": "融媒",
+      "mode": "keyword",
+      "enabled": true
+    },
+    {
+      "name": "封面·深度调查专题",
+      "url": "https://www.thecover.cn/getSubjectById/16060?skId=12601",
+      "parser": "thecover",
+      "column": "封面深镜·深度调查",
+      "media": "封面新闻",
+      "media_type": "融媒",
+      "mode": "all",
+      "enabled": true,
+      "note": "封面深镜调查组专题聚合页"
+    },
+    {
+      "name": "封面·封面调查专题",
+      "url": "https://www.thecover.cn/getSubjectById/15624?skId=12303",
+      "parser": "thecover",
+      "column": "封面深镜·封面调查",
+      "media": "封面新闻",
+      "media_type": "融媒",
+      "mode": "all",
+      "enabled": true,
+      "note": "21车冻货偏航等追踪报道专题"
+    },
+    {
+      "name": "上游·调查",
+      "url": "https://www.cqcb.com/channel/29.html",
+      "parser": "cqcb",
+      "column": "调查/热点",
+      "media": "上游新闻",
+      "media_type": "融媒",
+      "mode": "keyword",
+      "enabled": true
+    },
+    {
+      "name": "上游·法治",
+      "url": "https://www.cqcb.com/channel/14.html",
+      "parser": "cqcb",
+      "column": "法治",
+      "media": "上游新闻",
+      "media_type": "融媒",
+      "mode": "all",
+      "enabled": true,
+      "recent_only": false,
+      "note": "该栏目更新较慢，保留历史稿作为样本"
+    },
+    {
+      "name": "上游·评论",
+      "url": "https://www.cqcb.com/channel/6.html",
+      "parser": "cqcb",
+      "column": "评论",
+      "media": "上游新闻",
+      "media_type": "融媒",
+      "mode": "keyword",
+      "enabled": true
+    },
+    {
+      "name": "极目·世相",
+      "url": "https://www.ctdsb.net/c1716.html",
+      "parser": "ctdsb",
+      "column": "世相",
+      "media": "极目新闻",
+      "media_type": "融媒",
+      "mode": "keyword",
+      "enabled": true
+    },
+    {
+      "name": "极目·消费",
+      "url": "https://www.ctdsb.net/c1738.html",
+      "parser": "ctdsb",
+      "column": "消费",
+      "media": "极目新闻",
+      "media_type": "融媒",
+      "mode": "keyword",
+      "enabled": true
+    },
+    {
+      "name": "极目·健康",
+      "url": "https://www.ctdsb.net/c1659.html",
+      "parser": "ctdsb",
+      "column": "健康",
+      "media": "极目新闻",
+      "media_type": "融媒",
+      "mode": "keyword",
+      "enabled": true
+    },
+    {
+      "name": "极目·科教",
+      "url": "https://www.ctdsb.net/c1673.html",
+      "parser": "ctdsb",
+      "column": "科教",
+      "media": "极目新闻",
+      "media_type": "融媒",
+      "mode": "keyword",
+      "enabled": true
+    },
+    {
+      "name": "九派·官方微博聚合页",
+      "url": "https://sina.cn/media/7516679696",
+      "parser": "jiupai_sina",
+      "column": "九派新闻官方微博",
+      "media": "九派新闻",
+      "media_type": "融媒",
+      "mode": "keyword",
+      "enabled": true,
+      "note": "官网 www.jiupainews.com 为 React 内容后台，无公开列表页；改用官方微博在新浪新闻的 SSR 聚合页"
+    }
+  ],
+  "keywords": {
+    "医疗用血": [
+      "血小板",
+      "用血",
+      "献血",
+      "血库",
+      "血头",
+      "输血",
+      "医保",
+      "就医",
+      "医院",
+      "药品",
+      "白血病"
+    ],
+    "劳动权益": [
+      "裁员",
+      "调岗",
+      "降薪",
+      "加班",
+      "欠薪",
+      "工伤",
+      "劳动仲裁",
+      "社保",
+      "外卖骑手",
+      "劳务派遣",
+      "无薪"
+    ],
+    "消费维权": [
+      "维权",
+      "退款",
+      "预付",
+      "差评",
+      "直播带货",
+      "诈骗",
+      "食品安全",
+      "鉴宝",
+      "熏硫",
+      "投诉"
+    ],
+    "社会保障": [
+      "低保",
+      "医保基金",
+      "公租房",
+      "救助",
+      "残疾",
+      "养老",
+      "适老",
+      "银发",
+      "老年"
+    ],
+    "公共安全": [
+      "失联",
+      "搜救",
+      "火灾",
+      "事故",
+      "通报",
+      "偷拍",
+      "个人信息",
+      "校园",
+      "遇难"
+    ],
+    "教育住房": [
+      "教师",
+      "学生",
+      "学校",
+      "招生",
+      "买房",
+      "房价",
+      "住房",
+      "楼盘",
+      "健身圈"
+    ]
+  },
+  "channels": [
+    {
+      "group": "权威索引",
+      "items": [
+        {
+          "name": "中国记协『我的代表作』（每周一更新，深度/舆论监督稿精选）",
+          "url": "https://mp.weixin.qq.com/s?__biz=MzA5MzAxNjE5NA==&mid=2707684590&idx=1&sn=5606c044a84c6df65cd594b0b92548a3"
+        },
+        {
+          "name": "澎湃站内搜索 searchResult?id=关键词",
+          "url": "https://www.thepaper.cn/searchResult?id=%E7%8C%AE%E8%A1%80"
+        },
+        {
+          "name": "澎湃号·媒体（第三方媒体号）",
+          "url": "https://m.thepaper.cn/channel_135619"
+        }
+      ]
+    },
+    {
+      "group": "官媒 / 央媒栏目",
+      "items": [
+        {
+          "name": "人民日报 民生一线 / 枝叶关情 / 有所思 / 多棱镜",
+          "url": "http://paper.people.com.cn/rmrb/pc/layout/202611/06/node_01.html"
+        },
+        {
+          "name": "人民网 社会频道",
+          "url": "http://society.people.com.cn/"
+        },
+        {
+          "name": "新华网 民生",
+          "url": "http://www.xinhuanet.com/"
+        },
+        {
+          "name": "央视网 评论（深度报道）",
+          "url": "https://opinion.cctv.com/"
+        },
+        {
+          "name": "央视 焦点访谈 / 每周质量报告",
+          "url": "https://tv.cctv.com/"
+        },
+        {
+          "name": "工人日报·中工网 权益版",
+          "url": "https://www.workercn.cn/"
+        },
+        {
+          "name": "中国新闻周刊",
+          "url": "http://www.inewsweek.cn/"
+        }
+      ]
+    },
+    {
+      "group": "地方融媒体 / 市场化媒体",
+      "items": [
+        {
+          "name": "澎湃新闻 时事频道",
+          "url": "https://www.thepaper.cn/channel_25950"
+        },
+        {
+          "name": "封面新闻（深镜调查组）",
+          "url": "https://www.thecover.cn/"
+        },
+        {
+          "name": "上游新闻",
+          "url": "https://www.cqcb.com/"
+        },
+        {
+          "name": "九派新闻",
+          "url": "https://www.jiupainews.com/"
+        },
+        {
+          "name": "极目新闻",
+          "url": "https://www.ctdsb.net/"
+        },
+        {
+          "name": "红星新闻",
+          "url": "https://www.cdsb.com/"
+        },
+        {
+          "name": "大象新闻",
+          "url": "https://www.hnrbp.com/"
+        },
+        {
+          "name": "大众网·海报新闻",
+          "url": "https://www.dzwww.com/"
+        },
+        {
+          "name": "南方都市报 / 南方+",
+          "url": "https://www.oeeee.com/"
+        },
+        {
+          "name": "新京报",
+          "url": "https://www.bjnews.com.cn/"
+        },
+        {
+          "name": "界面新闻·界面调查",
+          "url": "https://www.jiemian.com/"
+        }
+      ]
+    },
+    {
+      "group": "澎湃已验证栏目ID",
+      "items": [
+        {
+          "name": "直击现场 list_25428",
+          "url": "https://www.thepaper.cn/list_25428"
+        },
+        {
+          "name": "澎湃人物 list_25427",
+          "url": "https://www.thepaper.cn/list_25427"
+        },
+        {
+          "name": "绿政公署 list_25425",
+          "url": "https://www.thepaper.cn/list_25425"
+        },
+        {
+          "name": "一号专案 list_25424",
+          "url": "https://www.thepaper.cn/list_25424"
+        },
+        {
+          "name": "法治中国 list_25426",
+          "url": "https://www.thepaper.cn/list_25426"
+        },
+        {
+          "name": "浦江头条 list_25422",
+          "url": "https://www.thepaper.cn/list_25422"
+        },
+        {
+          "name": "暖闻湃 list_26911",
+          "url": "https://www.thepaper.cn/list_26911"
+        },
+        {
+          "name": "中国政库 list_25462",
+          "url": "https://www.thepaper.cn/list_25462"
+        },
+        {
+          "name": "澎湃评论 list_27224",
+          "url": "https://www.thepaper.cn/list_27224"
+        }
+      ]
+    },
+    {
+      "group": "四家融媒体新接入的解析规则（可直接点开栏目）",
+      "items": [
+        {
+          "name": "封面·首页",
+          "url": "https://www.thecover.cn/"
+        },
+        {
+          "name": "封面·深度调查专题（封面深镜）",
+          "url": "https://www.thecover.cn/getSubjectById/16060?skId=12601"
+        },
+        {
+          "name": "封面·封面调查专题",
+          "url": "https://www.thecover.cn/getSubjectById/15624?skId=12303"
+        },
+        {
+          "name": "上游·调查 c29",
+          "url": "https://www.cqcb.com/channel/29.html"
+        },
+        {
+          "name": "上游·法治 c14",
+          "url": "https://www.cqcb.com/channel/14.html"
+        },
+        {
+          "name": "上游·评论 c6",
+          "url": "https://www.cqcb.com/channel/6.html"
+        },
+        {
+          "name": "上游·健康 c24",
+          "url": "https://www.cqcb.com/channel/24.html"
+        },
+        {
+          "name": "极目·世相 c1716",
+          "url": "https://www.ctdsb.net/c1716.html"
+        },
+        {
+          "name": "极目·消费 c1738",
+          "url": "https://www.ctdsb.net/c1738.html"
+        },
+        {
+          "name": "极目·健康 c1659",
+          "url": "https://www.ctdsb.net/c1659.html"
+        },
+        {
+          "name": "极目·科教 c1673",
+          "url": "https://www.ctdsb.net/c1673.html"
+        },
+        {
+          "name": "极目·观点 c1715",
+          "url": "https://www.ctdsb.net/c1715.html"
+        },
+        {
+          "name": "九派·官方微博（新浪新闻聚合页）",
+          "url": "https://sina.cn/media/7516679696"
+        }
+      ]
+    }
+  ]
+}
