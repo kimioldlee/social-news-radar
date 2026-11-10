@@ -562,8 +562,12 @@ def safe_write(path, text, encoding="utf-8"):
         except PermissionError:
             # 同一天多次运行写同一个文件，避免时间戳副本无限堆积
             alt = "{}_{}{}".format(stem, datetime.now().strftime("%Y%m%d"), ext)
-            with open(alt, "w", encoding=encoding, newline="") as f:
-                f.write(text)
+            try:
+                with open(alt, "w", encoding=encoding, newline="") as f:
+                    f.write(text)
+            except PermissionError:
+                print("! {} 及所有候选副本均被占用，跳过写入".format(os.path.basename(path)))
+                return ""
         print("! {} 被占用（可能在面板中打开），已写入副本 {}".format(
             os.path.basename(path), os.path.basename(alt)))
         return alt
@@ -583,7 +587,10 @@ def build_csv(data):
                 x.get("url", ""), x.get("note", ""), x.get("dup_count", 0),
             ])
     out = safe_write(CSV_FILE, buf.getvalue(), "utf-8-sig")
-    print("✓ CSV  →", out)
+    if out:
+        print("✓ CSV  →", out)
+    else:
+        print("! CSV  未写入（文件被占用）；看板内可导出最新 CSV")
 
 
 HTML_TEMPLATE = r"""<!DOCTYPE html>
@@ -666,10 +673,9 @@ footer{margin-top:30px;color:var(--muted);font-size:12px;border-top:1px solid va
     <select id="fType"><option value="">全部类型</option><option>官媒</option><option>融媒</option><option>榜单</option></select>
     <select id="fForm"><option value="">全部形态</option></select>
     <select id="fBucket"><option value="">全部批次</option><option>精选样本</option><option>实时抓取</option></select>
-    <select id="fSort">
-      <option value="time_desc">时间 ↓ 最新优先</option>
-      <option value="time_asc">时间 ↑ 最早优先</option>
-      <option value="default">默认顺序（精选→实时）</option>
+    <select id="fSort" autocomplete="off">
+      <option value="time_desc">时间 ↓ 最新优先（全部条目）</option>
+      <option value="time_asc">时间 ↑ 最早优先（全部条目）</option>
     </select>
     <button id="reset">重置</button>
     <button class="primary" id="export">导出 CSV</button>
@@ -701,6 +707,9 @@ const items = [];
 items.forEach((x,i)=>x._idx=i);
 document.getElementById('updated').textContent = D.updated || '';
 document.getElementById('windowLabel').textContent = (D.window && D.window.label) ? D.window.label : '不限时间';
+// 浏览器可能记住旧的排序值；非法值一律回退到「最新优先」
+const sortEl=document.getElementById('fSort');
+if(sortEl.value!=='time_desc'&&sortEl.value!=='time_asc') sortEl.value='time_desc';
 
 const forms = [...new Set(items.map(x=>x.form).filter(Boolean))];
 const fForm = document.getElementById('fForm');
@@ -735,7 +744,7 @@ document.getElementById('howto').innerHTML = [
   '<b>③ 官媒栏目</b>：人民日报「民生一线 / 枝叶关情 / 有所思 / 多棱镜」、央视「焦点访谈 / 每周质量报告 / 央视网评论」、工人日报权益版；多为「个体故事 + 专家释法 + 制度建议」结构。',
   '<b>④ 融媒调查</b>：澎湃「澎湃人物 / 绿政公署 / 一号专案 / 直击现场」、封面新闻「深镜调查组」、界面调查、大象新闻调查组、海报新闻「独立调查」，偏暗访与灰色产业链。',
   '<b>⑤ 四家融媒体解析规则</b>：封面新闻（首页 + 封面深镜专题页，<code>/news/&lt;加密ID&gt;</code>）、上游新闻（<code>/channel/29</code> 调查、<code>/14</code> 法治，URL 自带日期）、极目新闻（<code>/c1716</code> 世相、<code>/c1738</code> 消费、<code>/c1659</code> 健康）、九派新闻（官网为 React 内容后台无公开列表页，改抓其官方微博在新浪新闻的聚合页）。标题统一剥离「来源+时间+阅读量」噪音，跨源同题按标题前 18 字模糊去重。',
-  '<b>⑥ 自动化</b>：运行 <code>python scripts/collect_news.py --out &lt;输出目录&gt;</code> 抓取并重建看板与 CSV；<code>--no-fetch</code> 只重建，<code>--days N</code> 控制单源抓取天数，<code>--window N</code> 控制全局保留窗口（默认 30 天，0 为不限，超期稿件会从数据文件物理剔除），<code>--init</code> 重置为模板数据。看板默认按时间倒序，可切换为时间正序或默认顺序。',
+  '<b>⑥ 自动化</b>：运行 <code>python scripts/collect_news.py --out &lt;输出目录&gt;</code> 抓取并重建看板与 CSV；<code>--no-fetch</code> 只重建，<code>--days N</code> 控制单源抓取天数，<code>--window N</code> 控制全局保留窗口（默认 30 天，0 为不限，超期稿件会从数据文件物理剔除），<code>--init</code> 重置为模板数据。看板默认按时间倒序，可切换为时间正序；精选样本与实时抓取统一按日期排序，不再按批次分组，避免上周精选稿压住今天的新稿。',
   '<b>⑦ 同题去重</b>：跨媒体、跨批次按事件聚类，标题完全一致无条件合并；其余用字符 bigram 的 Jaccard / 重叠系数判断，相似度达阈值且日期相差不超过 1 天才算同一事件。每簇保留一条主稿（精选样本与官媒优先，同级取更新、信息更全的），其余媒体以「同题 N 家」标签和可点链接挂在主稿下，信息不丢失。<code>--dedup 0.48</code> 可调阈值，<code>--dedup 0</code> 关闭。'
 ].join('<br><br>');
 
@@ -753,9 +762,10 @@ function filtered(){
     if(q){const s=[x.title,x.media,x.column,x.note,(x.topics||[]).join(' ')].join(' ').toLowerCase();if(!s.includes(q))return false;}
     return true;
   });
+  // 精选样本与实时抓取统一按日期排序，不再按批次分组（否则上周精选会压住今天的新稿）
   const sort=document.getElementById('fSort').value;
-  if(sort==='time_desc') arr.sort((a,b)=>(b.date||'').localeCompare(a.date||'')||a._idx-b._idx);
-  else if(sort==='time_asc') arr.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a._idx-b._idx);
+  if(sort==='time_asc') arr.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a._idx-b._idx);
+  else arr.sort((a,b)=>(b.date||'').localeCompare(a.date||'')||a._idx-b._idx);
   return arr;
 }
 function render(){
@@ -812,7 +822,10 @@ def build_html(data):
     payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
     out = HTML_TEMPLATE.replace("__DATA_JSON__", payload)
     path = safe_write(HTML_FILE, out, "utf-8")
-    print("✓ HTML →", path)
+    if path:
+        print("✓ HTML →", path)
+    else:
+        print("! HTML 未写入（文件被占用）")
 
 
 KEYWORDS = {}
