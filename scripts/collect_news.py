@@ -22,6 +22,7 @@
 """
 import argparse
 import csv
+import difflib
 import html
 import json
 import os
@@ -361,6 +362,26 @@ def norm_title(title):
 
 
 DEDUP_THRESHOLD = 0.48
+ANCHOR_FLOOR = 0.28
+
+# 微博「警情通报」类模板串会让不同事件看起来很像，含这些标记的公共子串不算实体锚点
+TEMPLATE_MARKERS = (
+    "公安局", "警情通报", "发布警情", "接报辖区", "2026年", "11月", "时许",
+    "央视新闻", "新华社客户端",
+)
+
+
+def longest_common_substring(a, b):
+    m = difflib.SequenceMatcher(None, a, b).find_longest_match(0, len(a), 0, len(b))
+    return a[m.a:m.a + m.size]
+
+
+def strong_anchor(a, b):
+    """两条标题共享的具体实体串（地名 / 机构 / 事件对象），用于低相似度同题判定。"""
+    lcs = longest_common_substring(norm_full(a), norm_full(b))
+    if len(lcs) < 3 or any(m in lcs for m in TEMPLATE_MARKERS):
+        return ""
+    return lcs
 
 
 def norm_full(title):
@@ -396,10 +417,17 @@ def is_duplicate(a, b, A, B, threshold):
     # 标题完全一致：跨批次、跨日期无条件合并
     if norm_full(a["title"]) == norm_full(b["title"]):
         return True
-    if similarity_from_grams(A, B) < threshold:
-        return False
     gap = date_gap(a, b)
-    return gap is None or gap <= 1
+    if gap is not None and gap > 1:
+        return False
+    score = similarity_from_grams(A, B)
+    if score >= threshold:
+        return True
+    # 中相似度：同一事件的不同侧面（人数进展 / 救治情况 / 追责通报）字面差异很大，
+    # 靠共享的具体实体子串兜底；模板串（如「公安局发布警情通报…」）不算锚点
+    if score >= ANCHOR_FLOOR and strong_anchor(a["title"], b["title"]):
+        return True
+    return False
 
 
 def dedup_items(items, threshold):
@@ -438,6 +466,7 @@ def dedup_items(items, threshold):
             items[i].get("bucket") == "精选样本",
             items[i].get("type") == "官媒",
             items[i].get("date", ""),
+            len(re.findall(r"\d+", items[i].get("title", ""))),  # 含数字多的通常是更新、更全的进展稿
             len(items[i].get("title", "")),
         ))
         main = dict(items[best])
@@ -531,7 +560,8 @@ def safe_write(path, text, encoding="utf-8"):
             with open(alt, "w", encoding=encoding, newline="") as f:
                 f.write(text)
         except PermissionError:
-            alt = "{}_{}{}".format(stem, datetime.now().strftime("%H%M%S"), ext)
+            # 同一天多次运行写同一个文件，避免时间戳副本无限堆积
+            alt = "{}_{}{}".format(stem, datetime.now().strftime("%Y%m%d"), ext)
             with open(alt, "w", encoding=encoding, newline="") as f:
                 f.write(text)
         print("! {} 被占用（可能在面板中打开），已写入副本 {}".format(
