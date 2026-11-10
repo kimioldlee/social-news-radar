@@ -360,6 +360,104 @@ def norm_title(title):
     return re.sub(r"[^\u4e00-\u9fa5a-zA-Z0-9]", "", title)[:18]
 
 
+DEDUP_THRESHOLD = 0.48
+
+
+def norm_full(title):
+    return re.sub(r"[^\u4e00-\u9fa5a-zA-Z0-9]", "", title or "")
+
+
+def title_bigrams(title):
+    s = norm_full(title)
+    if len(s) < 2:
+        return {s} if s else set()
+    return {s[i:i + 2] for i in range(len(s) - 1)}
+
+
+def similarity_from_grams(A, B):
+    """字符 bigram 的 Jaccard 与重叠系数取较大者；重叠系数能抓住「短标题被长标题包住」。"""
+    if not A or not B:
+        return 0.0
+    jaccard = len(A & B) / len(A | B)
+    overlap = len(A & B) / min(len(A), len(B))
+    return max(jaccard, overlap * 0.85)
+
+
+def date_gap(a, b):
+    try:
+        da = datetime.strptime(a.get("date", ""), "%Y-%m-%d")
+        db = datetime.strptime(b.get("date", ""), "%Y-%m-%d")
+        return abs((da - db).days)
+    except (ValueError, TypeError):
+        return None
+
+
+def is_duplicate(a, b, A, B, threshold):
+    # 标题完全一致：跨批次、跨日期无条件合并
+    if norm_full(a["title"]) == norm_full(b["title"]):
+        return True
+    if similarity_from_grams(A, B) < threshold:
+        return False
+    gap = date_gap(a, b)
+    return gap is None or gap <= 1
+
+
+def dedup_items(items, threshold):
+    """事件级去重：并查集聚类，每簇保留一条主稿，其余聚合为主稿的同题报道列表。
+
+    保留优先级：精选样本 > 官媒 > 其它；同级取日期更新、标题信息更全的一条。
+    """
+    if threshold <= 0 or len(items) < 2:
+        return items, 0
+    grams = [title_bigrams(x["title"]) for x in items]
+    parent = list(range(len(items)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[rb] = ra
+
+    for i in range(len(items)):
+        for j in range(i + 1, len(items)):
+            if is_duplicate(items[i], items[j], grams[i], grams[j], threshold):
+                union(i, j)
+
+    clusters = {}
+    for i in range(len(items)):
+        clusters.setdefault(find(i), []).append(i)
+
+    kept, removed = [], 0
+    for idxs in clusters.values():
+        best = max(idxs, key=lambda i: (
+            items[i].get("bucket") == "精选样本",
+            items[i].get("type") == "官媒",
+            items[i].get("date", ""),
+            len(items[i].get("title", "")),
+        ))
+        main = dict(items[best])
+        others = [items[i] for i in idxs if i != best]
+        if others:
+            medias = list(dict.fromkeys(
+                x.get("media", "") for x in others if x.get("media")))
+            main["dup_count"] = len(others)
+            main["dup_media"] = medias
+            main["dup_urls"] = [
+                {"media": x.get("media", ""), "title": x.get("title", ""), "url": x.get("url", "")}
+                for x in others
+            ][:6]
+            tail = "同题另有 {} 家媒体报道：{}".format(len(others), "、".join(medias[:5]))
+            main["note"] = (main.get("note", "") + "｜" + tail).strip("｜")
+        kept.append(main)
+        removed += len(others)
+    return kept, removed
+
+
 def crawl(data, days, max_per_source):
     fresh = []
     cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
@@ -443,7 +541,7 @@ def safe_write(path, text, encoding="utf-8"):
 
 def build_csv(data):
     import io
-    header = ["数据批次", "日期", "媒体", "类型", "栏目", "报道形态", "标题", "主题标签", "链接", "备注"]
+    header = ["数据批次", "日期", "媒体", "类型", "栏目", "报道形态", "标题", "主题标签", "链接", "备注", "同题报道数"]
     buf = io.StringIO(newline="")
     w = csv.writer(buf)
     w.writerow(header)
@@ -452,8 +550,8 @@ def build_csv(data):
             x.get("bucket", ""), x.get("date", ""), x.get("media", ""),
             x.get("type", ""), x.get("column", ""), x.get("form", ""),
             x.get("title", ""), " / ".join(x.get("topics", [])),
-            x.get("url", ""), x.get("note", ""),
-        ])
+                x.get("url", ""), x.get("note", ""), x.get("dup_count", 0),
+            ])
     out = safe_write(CSV_FILE, buf.getvalue(), "utf-8-sig")
     print("✓ CSV  →", out)
 
@@ -607,7 +705,8 @@ document.getElementById('howto').innerHTML = [
   '<b>③ 官媒栏目</b>：人民日报「民生一线 / 枝叶关情 / 有所思 / 多棱镜」、央视「焦点访谈 / 每周质量报告 / 央视网评论」、工人日报权益版；多为「个体故事 + 专家释法 + 制度建议」结构。',
   '<b>④ 融媒调查</b>：澎湃「澎湃人物 / 绿政公署 / 一号专案 / 直击现场」、封面新闻「深镜调查组」、界面调查、大象新闻调查组、海报新闻「独立调查」，偏暗访与灰色产业链。',
   '<b>⑤ 四家融媒体解析规则</b>：封面新闻（首页 + 封面深镜专题页，<code>/news/&lt;加密ID&gt;</code>）、上游新闻（<code>/channel/29</code> 调查、<code>/14</code> 法治，URL 自带日期）、极目新闻（<code>/c1716</code> 世相、<code>/c1738</code> 消费、<code>/c1659</code> 健康）、九派新闻（官网为 React 内容后台无公开列表页，改抓其官方微博在新浪新闻的聚合页）。标题统一剥离「来源+时间+阅读量」噪音，跨源同题按标题前 18 字模糊去重。',
-  '<b>⑥ 自动化</b>：运行 <code>python scripts/collect_news.py --out &lt;输出目录&gt;</code> 抓取并重建看板与 CSV；<code>--no-fetch</code> 只重建，<code>--days N</code> 控制单源抓取天数，<code>--window N</code> 控制全局保留窗口（默认 30 天，0 为不限，超期稿件会从数据文件物理剔除），<code>--init</code> 重置为模板数据。看板默认按时间倒序，可切换为时间正序或默认顺序。'
+  '<b>⑥ 自动化</b>：运行 <code>python scripts/collect_news.py --out &lt;输出目录&gt;</code> 抓取并重建看板与 CSV；<code>--no-fetch</code> 只重建，<code>--days N</code> 控制单源抓取天数，<code>--window N</code> 控制全局保留窗口（默认 30 天，0 为不限，超期稿件会从数据文件物理剔除），<code>--init</code> 重置为模板数据。看板默认按时间倒序，可切换为时间正序或默认顺序。',
+  '<b>⑦ 同题去重</b>：跨媒体、跨批次按事件聚类，标题完全一致无条件合并；其余用字符 bigram 的 Jaccard / 重叠系数判断，相似度达阈值且日期相差不超过 1 天才算同一事件。每簇保留一条主稿（精选样本与官媒优先，同级取更新、信息更全的），其余媒体以「同题 N 家」标签和可点链接挂在主稿下，信息不丢失。<code>--dedup 0.48</code> 可调阈值，<code>--dedup 0</code> 关闭。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -636,12 +735,16 @@ function render(){
   if(!arr.length){box.innerHTML='<div class="empty">没有匹配的稿件，换个关键词试试</div>';return;}
   box.innerHTML=arr.map(x=>{
     const tags=(x.topics||[]).map(t=>'<span class="tag">'+esc(t)+'</span>').join('');
+    const dups=x.dup_urls||[];
+    const dupTag=dups.length?'<span class="tag" style="background:#eaf0ff;color:var(--blue);border:1px solid #c9d8ff">同题 '+dups.length+' 家</span>':'';
+    const dupLine=dups.length?'<div class="desc">同题报道：'+dups.map(d=>'<a href="'+esc(d.url)+'" target="_blank" rel="noopener">'+esc(d.media)+'</a>').join(' · ')+'</div>':'';
     return '<div class="item">'
       +'<div class="meta"><span class="badge b-'+esc(x.type)+'">'+esc(x.type)+'</span><br>'+esc(x.date)+'<br>'+esc(x.media)+'</div>'
       +'<div><a class="t" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.title)+'</a>'
       +'<div class="meta">'+esc(x.column||'')+(x.bucket==='实时抓取'?' · <span style="color:var(--blue)">实时抓取</span>':'')+'</div>'
       +(x.note?'<div class="desc">'+esc(x.note)+'</div>':'')
-      +'<div class="tags">'+tags+'</div></div>'
+      +dupLine
+      +'<div class="tags">'+tags+dupTag+'</div></div>'
       +'<div><span class="form f-'+esc(x.form)+'">'+esc(x.form)+'</span></div>'
       +'</div>';
   }).join('');
@@ -654,8 +757,9 @@ function stats(){
   const ds=items.map(x=>x.date).filter(Boolean).sort();
   const span=ds.length?(ds[0]+' 至 '+ds[ds.length-1]):'—';
   const win=(D.window&&D.window.label)?D.window.label:'不限时间';
+  const ded=(D.dedup&&D.dedup.merged)?' · 同题去重合并 '+D.dedup.merged+' 条 / '+D.dedup.clusters+' 个事件簇（阈值 '+D.dedup.threshold+'）':'';
   document.getElementById('stats').innerHTML=d.map(x=>'<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')
-    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条</span></div>';
+    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条'+esc(ded)+'</span></div>';
 }
 document.getElementById('export').onclick=()=>{
   const arr=filtered();
@@ -685,16 +789,19 @@ KEYWORDS = {}
 
 
 def main():
-    global KEYWORDS, WINDOW_DAYS
+    global KEYWORDS, WINDOW_DAYS, DEDUP_THRESHOLD
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-fetch", action="store_true", help="跳过采集，只重建看板与 CSV")
     ap.add_argument("--days", type=int, default=7, help="单源抓取时保留最近 N 天")
     ap.add_argument("--window", type=int, default=30, help="全局只保留近 N 天稿件，0 表示不限（默认 30）")
+    ap.add_argument("--dedup", type=float, default=0.48,
+                    help="同题去重相似度阈值，0 表示关闭（默认 0.48）")
     ap.add_argument("--max-per-source", type=int, default=20, help="每个源最多保留条数")
     ap.add_argument("--out", default=os.getcwd(), help="输出目录，默认当前工作目录")
     ap.add_argument("--init", action="store_true", help="用模板重新初始化数据文件（覆盖已有数据）")
     args = ap.parse_args()
     WINDOW_DAYS = args.window
+    DEDUP_THRESHOLD = args.dedup
 
     configure_output(args.out)
     if args.init or not os.path.exists(DATA_FILE):
@@ -724,10 +831,27 @@ def main():
         data["crawled"] = crawl(data, args.days, args.max_per_source)
         data["updated"] = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
 
+    # 同题去重：精选与实时统一聚类，物理剔除重复稿；主稿保留其他媒体的链接
+    removed_dup = 0
+    if DEDUP_THRESHOLD > 0:
+        merged, removed_dup = dedup_items(all_items(data), DEDUP_THRESHOLD)
+        buckets = [(x.pop("bucket", ""), dict(x)) for x in merged]
+        data["curated"] = [x for b, x in buckets if b == "精选样本"]
+        data["crawled"] = [x for b, x in buckets if b == "实时抓取"]
+    all_kept = data["curated"] + data["crawled"]
+    data["dedup"] = {
+        "threshold": DEDUP_THRESHOLD,
+        "removed": removed_dup,
+        "merged": sum(x.get("dup_count", 0) for x in all_kept),
+        "clusters": sum(1 for x in all_kept if x.get("dup_count")),
+    }
+
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     if dropped > 0:
         print("✓ 时间窗清理：剔除 {} 条早于 {} 的稿件".format(dropped, cutoff))
+    if removed_dup > 0:
+        print("✓ 同题去重：合并 {} 条重复报道（阈值 {}）".format(removed_dup, DEDUP_THRESHOLD))
     print("✓ 数据   →", DATA_FILE, "（精选 {} + 实时 {} 条，窗口 {}）".format(
         len(data["curated"]), len(data["crawled"]), data["window"]["label"]))
     build_csv(data)
