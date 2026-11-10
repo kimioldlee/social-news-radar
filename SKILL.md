@@ -26,6 +26,7 @@ agent_created: true
 python <skill-dir>/scripts/collect_news.py --out .
 python <skill-dir>/scripts/collect_news.py --out . --no-fetch
 python <skill-dir>/scripts/collect_news.py --out . --init --days 7 --max-per-source 12
+python <skill-dir>/scripts/collect_news.py --out . --window 0 --no-fetch   # 不限时间窗
 ```
 
 首次运行自动把 `assets/news_data.template.json` 复制为输出目录的 `news_data.json`。产出三个文件，全部落在 `--out` 目录、不污染技能包：
@@ -42,7 +43,7 @@ python <skill-dir>/scripts/collect_news.py --out . --init --days 7 --max-per-sou
 2. **配置**：编辑输出目录的 `news_data.json`。`sources` 控制启用哪些源及 `parser` / `mode` / `recent_only`；`keywords` 是 6 组民生痛点词；`channels` 是看板里的可点入口分组；`curated` 是人工精选样本（可替换或清空）。
 3. **采集**：运行脚本。每源间隔 1.2 秒，带完整浏览器头；失败源自动跳过并提示，不影响其它源。
 4. **查看**：打开 HTML 看板，按类型 / 报道形态 / 主题标签筛选、全文搜索、导出当前筛选结果为 CSV。
-5. **复用**：`--no-fetch` 只重建看板与 CSV；配合定时任务即可每日更新。`--days N` 控制时间窗，`--max-per-source N` 控制单源条数。
+5. **复用**：`--no-fetch` 只重建看板与 CSV；配合定时任务即可每日更新。`--days N` 控制单源抓取天数，`--window N` 控制全局保留窗口（默认 30 天，`0` 不限），`--max-per-source N` 控制单源条数。超过窗口的稿件会从 `news_data.json` 物理剔除，不会累积。
 
 ## 内置解析规则摘要
 
@@ -70,6 +71,8 @@ python <skill-dir>/scripts/collect_news.py --out . --init --days 7 --max-per-sou
 - **异步搜索页**：澎湃 `searchResult?id=` 是客户端异步渲染，Python 直抓拿不到结果，改用服务端渲染的 `list_` 栏目页；浏览器类工具可直接查看搜索页。
 - **标题噪音**：列表页常把「来源 + 日期 + 阅读量 / 栏目名」塞进同一个 `<a>`，脚本统一清洗；跨源同题按标题前 18 字归一化去重。
 - **文件占用**：输出 CSV 被编辑器占用时，自动写入 `社会民生新闻样本_最新.csv` 副本并在控制台提示，不覆盖被锁文件。
+- **数据窗口**：默认只保留近 30 天（起点按运行日倒推 30 天），精选样本与实时抓取一视同仁；看板头部显示窗口标签、统计栏显示实际时间跨度。需要历史稿时用 `--window 0` 并重新抓取。
+- **时间排序**：看板默认「时间 ↓ 最新优先」，可切换「时间 ↑ 最早优先」或「默认顺序（精选→实时）」；导出的 CSV 跟随当前排序与筛选结果。
 
 ## 扩展新站
 

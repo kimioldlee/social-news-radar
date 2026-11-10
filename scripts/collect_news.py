@@ -339,6 +339,22 @@ def match_topics(title):
     return hits
 
 
+WINDOW_DAYS = 30
+
+
+def window_cutoff(days=None):
+    """近 N 天的起始日期（含当天）；days<=0 表示不设时间窗。"""
+    n = WINDOW_DAYS if days is None else days
+    if not n or n <= 0:
+        return ""
+    return (datetime.now(timezone(timedelta(hours=8))) - timedelta(days=n)).strftime("%Y-%m-%d")
+
+
+def within_window(item, cutoff):
+    """无日期的条目保留；有日期则必须不早于窗口起点。"""
+    return not cutoff or not item.get("date") or item["date"] >= cutoff
+
+
 def norm_title(title):
     """去掉标点后取前 18 字，用于跨源同题去模糊去重。"""
     return re.sub(r"[^\u4e00-\u9fa5a-zA-Z0-9]", "", title)[:18]
@@ -377,10 +393,17 @@ def crawl(data, days, max_per_source):
         if key:
             seen_title.add(key)
         out.append(x)
+    wcut = window_cutoff()
+    if wcut:
+        kept = [x for x in out if within_window(x, wcut)]
+        if len(kept) != len(out):
+            print("   时间窗过滤：剔除 {} 条早于 {} 的稿件".format(len(out) - len(kept), wcut))
+        out = kept
     return out
 
 
 def all_items(data):
+    cutoff = window_cutoff()
     curated = []
     for x in data.get("curated", []):
         y = dict(x)
@@ -388,7 +411,7 @@ def all_items(data):
         y["source"] = x.get("media", "")
         curated.append(y)
     crawled = [dict(x, bucket="实时抓取") for x in data.get("crawled", [])]
-    return curated + crawled
+    return [x for x in curated + crawled if within_window(x, cutoff)]
 
 
 def safe_write(path, text, encoding="utf-8"):
@@ -504,7 +527,7 @@ footer{margin-top:30px;color:var(--muted);font-size:12px;border-top:1px solid va
 <div class="wrap">
 <header>
   <h1>官媒 &amp; 融媒体 · 社会民生新闻抓取看板</h1>
-  <div class="sub">采集范围：人民日报 / 新华社 / 央视网 / 工人日报等官媒，澎湃 / 封面 / 上游 / 九派 / 极目 / 红星 / 新京报 / 中国新闻周刊等融媒体｜重点：民生痛点、深度调查、舆论监督｜更新于 <span id="updated"></span></div>
+  <div class="sub">采集范围：人民日报 / 新华社 / 央视网 / 工人日报等官媒，澎湃 / 封面 / 上游 / 九派 / 极目 / 红星 / 新京报 / 中国新闻周刊等融媒体｜重点：民生痛点、深度调查、舆论监督｜更新于 <span id="updated"></span>｜数据窗口 <span id="windowLabel"></span></div>
 </header>
 
 <div class="stats" id="stats"></div>
@@ -515,6 +538,11 @@ footer{margin-top:30px;color:var(--muted);font-size:12px;border-top:1px solid va
     <select id="fType"><option value="">全部类型</option><option>官媒</option><option>融媒</option><option>榜单</option></select>
     <select id="fForm"><option value="">全部形态</option></select>
     <select id="fBucket"><option value="">全部批次</option><option>精选样本</option><option>实时抓取</option></select>
+    <select id="fSort">
+      <option value="time_desc">时间 ↓ 最新优先</option>
+      <option value="time_asc">时间 ↑ 最早优先</option>
+      <option value="default">默认顺序（精选→实时）</option>
+    </select>
     <button id="reset">重置</button>
     <button class="primary" id="export">导出 CSV</button>
   </div>
@@ -542,7 +570,9 @@ const D = JSON.parse(document.getElementById('payload').textContent);
 const items = [];
 (D.curated||[]).forEach(x=>items.push(Object.assign({},x,{bucket:'精选样本'})));
 (D.crawled||[]).forEach(x=>items.push(Object.assign({},x,{bucket:'实时抓取'})));
+items.forEach((x,i)=>x._idx=i);
 document.getElementById('updated').textContent = D.updated || '';
+document.getElementById('windowLabel').textContent = (D.window && D.window.label) ? D.window.label : '不限时间';
 
 const forms = [...new Set(items.map(x=>x.form).filter(Boolean))];
 const fForm = document.getElementById('fForm');
@@ -577,7 +607,7 @@ document.getElementById('howto').innerHTML = [
   '<b>③ 官媒栏目</b>：人民日报「民生一线 / 枝叶关情 / 有所思 / 多棱镜」、央视「焦点访谈 / 每周质量报告 / 央视网评论」、工人日报权益版；多为「个体故事 + 专家释法 + 制度建议」结构。',
   '<b>④ 融媒调查</b>：澎湃「澎湃人物 / 绿政公署 / 一号专案 / 直击现场」、封面新闻「深镜调查组」、界面调查、大象新闻调查组、海报新闻「独立调查」，偏暗访与灰色产业链。',
   '<b>⑤ 四家融媒体解析规则</b>：封面新闻（首页 + 封面深镜专题页，<code>/news/&lt;加密ID&gt;</code>）、上游新闻（<code>/channel/29</code> 调查、<code>/14</code> 法治，URL 自带日期）、极目新闻（<code>/c1716</code> 世相、<code>/c1738</code> 消费、<code>/c1659</code> 健康）、九派新闻（官网为 React 内容后台无公开列表页，改抓其官方微博在新浪新闻的聚合页）。标题统一剥离「来源+时间+阅读量」噪音，跨源同题按标题前 18 字模糊去重。',
-  '<b>⑥ 自动化</b>：运行 <code>python scripts/collect_news.py --out &lt;输出目录&gt;</code> 抓取并重建看板与 CSV；<code>--no-fetch</code> 只重建，<code>--days N</code> 控制时间窗，<code>--init</code> 重置为模板数据。'
+  '<b>⑥ 自动化</b>：运行 <code>python scripts/collect_news.py --out &lt;输出目录&gt;</code> 抓取并重建看板与 CSV；<code>--no-fetch</code> 只重建，<code>--days N</code> 控制单源抓取天数，<code>--window N</code> 控制全局保留窗口（默认 30 天，0 为不限，超期稿件会从数据文件物理剔除），<code>--init</code> 重置为模板数据。看板默认按时间倒序，可切换为时间正序或默认顺序。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -586,7 +616,7 @@ function filtered(){
   const ty=document.getElementById('fType').value;
   const fo=fForm.value, bu=document.getElementById('fBucket').value;
   const on=[...document.querySelectorAll('.chip.on')].map(x=>x.dataset.t);
-  return items.filter(x=>{
+  const arr = items.filter(x=>{
     if(ty&&x.type!==ty)return false;
     if(fo&&x.form!==fo)return false;
     if(bu&&x.bucket!==bu)return false;
@@ -594,6 +624,10 @@ function filtered(){
     if(q){const s=[x.title,x.media,x.column,x.note,(x.topics||[]).join(' ')].join(' ').toLowerCase();if(!s.includes(q))return false;}
     return true;
   });
+  const sort=document.getElementById('fSort').value;
+  if(sort==='time_desc') arr.sort((a,b)=>(b.date||'').localeCompare(a.date||'')||a._idx-b._idx);
+  else if(sort==='time_asc') arr.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a._idx-b._idx);
+  return arr;
 }
 function render(){
   const arr=filtered();
@@ -617,8 +651,11 @@ function stats(){
   const deep=items.filter(x=>['深度调查','舆论监督'].includes(x.form)).length;
   const media=new Set(items.map(x=>x.media)).size;
   const d=[['稿件总数',n],['官媒 / 央媒',gm],['融媒体 / 市场媒体',rm],['深度调查 · 舆论监督',deep]];
+  const ds=items.map(x=>x.date).filter(Boolean).sort();
+  const span=ds.length?(ds[0]+' 至 '+ds[ds.length-1]):'—';
+  const win=(D.window&&D.window.label)?D.window.label:'不限时间';
   document.getElementById('stats').innerHTML=d.map(x=>'<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')
-    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 2026-01 至 '+esc(D.updated)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条</span></div>';
+    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条</span></div>';
 }
 document.getElementById('export').onclick=()=>{
   const arr=filtered();
@@ -628,8 +665,8 @@ document.getElementById('export').onclick=()=>{
   const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='社会民生新闻筛选结果.csv';a.click();
 };
-document.getElementById('reset').onclick=()=>{document.getElementById('q').value='';document.getElementById('fType').value='';fForm.value='';document.getElementById('fBucket').value='';document.querySelectorAll('.chip.on').forEach(x=>x.classList.remove('on'));render();};
-['q','fType','fForm','fBucket'].forEach(id=>{const el=document.getElementById(id);el.addEventListener(id==='q'?'input':'change',render);});
+document.getElementById('reset').onclick=()=>{document.getElementById('q').value='';document.getElementById('fType').value='';fForm.value='';document.getElementById('fBucket').value='';document.getElementById('fSort').value='time_desc';document.querySelectorAll('.chip.on').forEach(x=>x.classList.remove('on'));render();};
+['q','fType','fForm','fBucket','fSort'].forEach(id=>{const el=document.getElementById(id);el.addEventListener(id==='q'?'input':'change',render);});
 stats();render();
 </script>
 </body>
@@ -648,14 +685,16 @@ KEYWORDS = {}
 
 
 def main():
-    global KEYWORDS
+    global KEYWORDS, WINDOW_DAYS
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-fetch", action="store_true", help="跳过采集，只重建看板与 CSV")
-    ap.add_argument("--days", type=int, default=7, help="实时稿件保留最近 N 天")
+    ap.add_argument("--days", type=int, default=7, help="单源抓取时保留最近 N 天")
+    ap.add_argument("--window", type=int, default=30, help="全局只保留近 N 天稿件，0 表示不限（默认 30）")
     ap.add_argument("--max-per-source", type=int, default=20, help="每个源最多保留条数")
     ap.add_argument("--out", default=os.getcwd(), help="输出目录，默认当前工作目录")
     ap.add_argument("--init", action="store_true", help="用模板重新初始化数据文件（覆盖已有数据）")
     args = ap.parse_args()
+    WINDOW_DAYS = args.window
 
     configure_output(args.out)
     if args.init or not os.path.exists(DATA_FILE):
@@ -668,12 +707,29 @@ def main():
         data = json.load(f)
     KEYWORDS = data.get("keywords", {})
 
+    # 全局时间窗：精选样本与实时抓取一视同仁，物理剔除超期稿件并写回数据文件
+    cutoff = window_cutoff()
+    before = len(data.get("curated", [])) + len(data.get("crawled", []))
+    if cutoff:
+        data["curated"] = [x for x in data.get("curated", []) if within_window(x, cutoff)]
+        data["crawled"] = [x for x in data.get("crawled", []) if within_window(x, cutoff)]
+    dropped = before - len(data["curated"]) - len(data["crawled"])
+    data["window"] = {
+        "days": args.window,
+        "cutoff": cutoff,
+        "label": "近 {} 天（{} 起）".format(args.window, cutoff) if cutoff else "不限时间",
+    }
+
     if not args.no_fetch:
         data["crawled"] = crawl(data, args.days, args.max_per_source)
         data["updated"] = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        print("✓ 数据   →", DATA_FILE, "（实时抓取 {} 条）".format(len(data["crawled"])))
+
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    if dropped > 0:
+        print("✓ 时间窗清理：剔除 {} 条早于 {} 的稿件".format(dropped, cutoff))
+    print("✓ 数据   →", DATA_FILE, "（精选 {} + 实时 {} 条，窗口 {}）".format(
+        len(data["curated"]), len(data["crawled"]), data["window"]["label"]))
     build_csv(data)
     build_html(data)
 
