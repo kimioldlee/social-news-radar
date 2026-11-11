@@ -144,17 +144,34 @@ FOCUS_PEOPLE = (
     "司机", "摊主", "游客", "乘客", "博主", "网友", "毕业生", "主播", "班主任",
     "当事人", "住户", "居民", "孕妇", "学子",
 )
+# 暖闻 / 校园趣闻 / 健康科普：都是软内容，不属于「社会民生强相关事件报道」。
+# 只作用于 form=栏目更新 的兜底稿，避免误伤深度调查 / 舆论监督等正式报道。
+FOCUS_FLUFF = (
+    # 暖闻、机构宣传、表彰
+    "暖侬心", "生命通道", "护送", "平安就医", "风华正茂", "青春之力", "守护每一颗心",
+    "以热血之名", "见义勇为", "暖心事", "致敬", "好人好事", "千里驰援",
+    # 校园趣闻、校园软新闻
+    "花样游泳", "零基础学", "拿下4枚金牌", "吐火术", "非遗登台", "惊艳全场",
+    "苦练千次", "国旗下", "滑翔班", "思政课", "校史", "推迟上学时间",
+    "让孩子多睡会", "美人鱼", "健身学舞", "为演好",
+    # 健康科普、养生警示
+    "专家提醒", "刷短视频超", "注意力被反复重塑", "课业拖延", "隔夜菜", "肝脏抽出",
+    "脓液", "医生谈", "久坐加班", "血栓风险", "肺栓塞", "血脂高", "自己开药",
+    "险丧命", "肝功能", "科普",
+)
 FOCUS_ENABLED = True
 
 
 def is_social_focus(x):
-    """判定是否为社会民生强相关的事件报道；政务通知类返回 False。"""
+    """判定是否为社会民生强相关的事件报道；政务通知类与软内容返回 False。"""
     if not FOCUS_ENABLED:
         return True
     t = x.get("title", "")
     if any(k in t for k in FOCUS_HARD):
         return False
     if any(k in t for k in FOCUS_SOFT) and not any(k in t for k in FOCUS_PEOPLE):
+        return False
+    if x.get("form") == "栏目更新" and any(k in t for k in FOCUS_FLUFF):
         return False
     return True
 
@@ -816,7 +833,7 @@ document.getElementById('howto').innerHTML = [
   '<b>⑥ 自动化</b>：运行 <code>python scripts/collect_news.py --out &lt;输出目录&gt;</code> 抓取并重建看板与 CSV；<code>--no-fetch</code> 只重建，<code>--days N</code> 控制单源抓取天数，<code>--window N</code> 控制全局保留窗口（默认 30 天，0 为不限，超期稿件会从数据文件物理剔除），<code>--init</code> 重置为模板数据。看板默认按时间倒序，可切换为时间正序；精选样本与实时抓取统一按日期排序，不再按批次分组，避免上周精选稿压住今天的新稿。',
   '<b>⑦ 同题去重</b>：跨媒体、跨批次按事件聚类，标题完全一致无条件合并；其余用字符 bigram 的 Jaccard / 重叠系数判断，相似度达阈值且日期相差不超过 1 天才算同一事件。每簇保留一条主稿（精选样本与官媒优先，同级取更新、信息更全的），其余媒体以「同题 N 家」标签和可点链接挂在主稿下，信息不丢失。<code>--dedup 0.48</code> 可调阈值，<code>--dedup 0</code> 关闭。',
   '<b>⑧ 报道形态</b>：「全部形态」下拉的所有选项由当前数据动态生成，每次重建看板都会同步刷新。精选样本保留人工标注；实时抓取稿按标题关键词自动归入评论 / 舆论监督 / 深度调查 / 通报回应 / 个案维权 / 政策服务，无命中的落到「栏目更新」兜底（多为暖闻、校园活动、健康科普等）。规则表在 <code>scripts/collect_news.py</code> 的 <code>FORM_RULES</code>，可直接增删关键词。',
-  '<b>⑨ 社会民生聚焦</b>：默认只显示强相关的<b>事件报道</b>，自动过滤政务通知、政策发布、会议部署、机构宣传与表彰、时政要闻。判定分两级：<code>FOCUS_HARD</code> 命中即排除；<code>FOCUS_SOFT</code> 命中但标题里没有任何具体人物（<code>FOCUS_PEOPLE</code>）才排除，避免误删人物报道。被过滤稿仍完整保存在 news_data.json，用 <code>--focus 0</code> 可查看全量；三个词表可直接增删关键词。'
+  '<b>⑨ 社会民生聚焦</b>：默认只显示强相关的<b>事件报道</b>，过滤政务通知、政策发布、会议部署、机构宣传与表彰、时政要闻，以及暖闻、校园趣闻、健康科普等软内容。判定分三级：<code>FOCUS_HARD</code> 命中即排除；<code>FOCUS_SOFT</code> 命中但标题里没有任何具体人物（<code>FOCUS_PEOPLE</code>）才排除，避免误删人物报道；<code>FOCUS_FLUFF</code> 只对「栏目更新」兜底稿生效，剔除暖闻 / 趣闻 / 科普。被过滤稿仍完整保存在 news_data.json，用 <code>--focus 0</code> 可查看全量；四个词表可直接增删关键词。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
