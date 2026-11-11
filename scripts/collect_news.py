@@ -126,6 +126,34 @@ def clean_title(inner):
     return text.strip()
 
 
+# 报道形态自动归类：按标题特征顺序匹配，越具体的规则越靠前
+FORM_RULES = [
+    ("评论", ("马上评", "锐评", "时评", "社论", "零度时评", "言短意长", "评丨", "评｜",
+              "热点快评", "封面评论", "极目锐评", "评论员", "岂能明目张胆")),
+    ("舆论监督", ("暗访", "起底", "曝光", "乱象", "黑产", "揭秘", "卧底", "彻查", "查处",
+                "涉嫌", "记者调查", "调查丨", "调查｜", "调查|", "围猎", "猫腻", "被查实",
+                "诈骗", "跑路", "白干", "甩客", "提级调查", "被查扣")),
+    ("深度调查", ("深度", "追踪", "调查报告", "纪实", "记者手记", "弦外", "探访", "对话",
+                "回访", "复盘", "访谈", "背后的", "疑云")),
+    ("通报回应", ("通报", "回应", "情况说明", "致歉", "辟谣", "澄清", "公告", "声明",
+                "发布", "被抓获", "已被依法控制")),
+    ("个案维权", ("维权", "索赔", "退款", "获刑", "判刑", "判决", "赔偿", "被判", "起诉",
+                "申诉", "立案", "刑拘", "拘留", "处罚", "调查组", "投诉", "封禁",
+                "预存", "讨薪", "救助")),
+    ("政策服务", ("政策", "规划", "部署", "出台", "措施", "通知", "医保", "补贴", "发文",
+                "条例", "办法", "方案", "印发", "六部门", "卫健委", "草案", "专项计划",
+                "常务会议", "排查隐患", "正式落地", "征求意见", "二审")),
+]
+
+
+def classify_form(title):
+    """按标题关键词给实时抓取稿打形态标签；无命中时落到「栏目更新」兜底。"""
+    for form, keywords in FORM_RULES:
+        if any(k in title for k in keywords):
+            return form
+    return "栏目更新"
+
+
 def make_item(source, title, url, date="", note=""):
     """统一构造一条抓取结果，供各站点 parser 复用。"""
     title = clean_title(title)
@@ -139,7 +167,7 @@ def make_item(source, title, url, date="", note=""):
         "type": source.get("media_type", "融媒"),
         "column": source.get("column", ""),
         "title": title,
-        "form": "栏目更新",
+        "form": classify_form(title),
         "topics": match_topics(title),
         "url": url,
         "note": note or ("实时抓取自 " + source.get("name", "")),
@@ -745,7 +773,8 @@ document.getElementById('howto').innerHTML = [
   '<b>④ 融媒调查</b>：澎湃「澎湃人物 / 绿政公署 / 一号专案 / 直击现场」、封面新闻「深镜调查组」、界面调查、大象新闻调查组、海报新闻「独立调查」，偏暗访与灰色产业链。',
   '<b>⑤ 四家融媒体解析规则</b>：封面新闻（首页 + 封面深镜专题页，<code>/news/&lt;加密ID&gt;</code>）、上游新闻（<code>/channel/29</code> 调查、<code>/14</code> 法治，URL 自带日期）、极目新闻（<code>/c1716</code> 世相、<code>/c1738</code> 消费、<code>/c1659</code> 健康）、九派新闻（官网为 React 内容后台无公开列表页，改抓其官方微博在新浪新闻的聚合页）。标题统一剥离「来源+时间+阅读量」噪音，跨源同题按标题前 18 字模糊去重。',
   '<b>⑥ 自动化</b>：运行 <code>python scripts/collect_news.py --out &lt;输出目录&gt;</code> 抓取并重建看板与 CSV；<code>--no-fetch</code> 只重建，<code>--days N</code> 控制单源抓取天数，<code>--window N</code> 控制全局保留窗口（默认 30 天，0 为不限，超期稿件会从数据文件物理剔除），<code>--init</code> 重置为模板数据。看板默认按时间倒序，可切换为时间正序；精选样本与实时抓取统一按日期排序，不再按批次分组，避免上周精选稿压住今天的新稿。',
-  '<b>⑦ 同题去重</b>：跨媒体、跨批次按事件聚类，标题完全一致无条件合并；其余用字符 bigram 的 Jaccard / 重叠系数判断，相似度达阈值且日期相差不超过 1 天才算同一事件。每簇保留一条主稿（精选样本与官媒优先，同级取更新、信息更全的），其余媒体以「同题 N 家」标签和可点链接挂在主稿下，信息不丢失。<code>--dedup 0.48</code> 可调阈值，<code>--dedup 0</code> 关闭。'
+  '<b>⑦ 同题去重</b>：跨媒体、跨批次按事件聚类，标题完全一致无条件合并；其余用字符 bigram 的 Jaccard / 重叠系数判断，相似度达阈值且日期相差不超过 1 天才算同一事件。每簇保留一条主稿（精选样本与官媒优先，同级取更新、信息更全的），其余媒体以「同题 N 家」标签和可点链接挂在主稿下，信息不丢失。<code>--dedup 0.48</code> 可调阈值，<code>--dedup 0</code> 关闭。',
+  '<b>⑧ 报道形态</b>：「全部形态」下拉的所有选项由当前数据动态生成，每次重建看板都会同步刷新。精选样本保留人工标注；实时抓取稿按标题关键词自动归入评论 / 舆论监督 / 深度调查 / 通报回应 / 个案维权 / 政策服务，无命中的落到「栏目更新」兜底（多为暖闻、校园活动、健康科普等）。规则表在 <code>scripts/collect_news.py</code> 的 <code>FORM_RULES</code>，可直接增删关键词。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -798,8 +827,9 @@ function stats(){
   const span=ds.length?(ds[0]+' 至 '+ds[ds.length-1]):'—';
   const win=(D.window&&D.window.label)?D.window.label:'不限时间';
   const ded=(D.dedup&&D.dedup.merged)?' · 同题去重合并 '+D.dedup.merged+' 条 / '+D.dedup.clusters+' 个事件簇（阈值 '+D.dedup.threshold+'）':'';
+  const fm=(D.forms)?' · 实时稿形态归类 '+D.forms.classified+' 条（'+D.forms.fallback+' 条兜底）':'';
   document.getElementById('stats').innerHTML=d.map(x=>'<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')
-    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条'+esc(ded)+'</span></div>';
+    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条'+esc(ded)+esc(fm)+'</span></div>';
 }
 document.getElementById('export').onclick=()=>{
   const arr=filtered();
@@ -874,6 +904,11 @@ def main():
         data["crawled"] = crawl(data, args.days, args.max_per_source)
         data["updated"] = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
 
+    # 形态归类：每次运行都重算实时抓取稿，保证筛选分类随数据同步刷新；
+    # 精选样本保留人工标注，不被规则覆盖
+    for x in data["crawled"]:
+        x["form"] = classify_form(x["title"])
+
     # 同题去重：精选与实时统一聚类，物理剔除重复稿；主稿保留其他媒体的链接
     removed_dup = 0
     if DEDUP_THRESHOLD > 0:
@@ -882,6 +917,8 @@ def main():
         data["curated"] = [x for b, x in buckets if b == "精选样本"]
         data["crawled"] = [x for b, x in buckets if b == "实时抓取"]
     all_kept = data["curated"] + data["crawled"]
+    classified = sum(1 for x in data["crawled"] if x.get("form") != "栏目更新")
+    data["forms"] = {"classified": classified, "fallback": len(data["crawled"]) - classified}
     data["dedup"] = {
         "threshold": DEDUP_THRESHOLD,
         "removed": removed_dup,
@@ -895,6 +932,8 @@ def main():
         print("✓ 时间窗清理：剔除 {} 条早于 {} 的稿件".format(dropped, cutoff))
     if removed_dup > 0:
         print("✓ 同题去重：合并 {} 条重复报道（阈值 {}）".format(removed_dup, DEDUP_THRESHOLD))
+    print("✓ 形态归类：{} 条实时稿已细分，{} 条保留「栏目更新」兜底".format(
+        data["forms"]["classified"], data["forms"]["fallback"]))
     print("✓ 数据   →", DATA_FILE, "（精选 {} + 实时 {} 条，窗口 {}）".format(
         len(data["curated"]), len(data["crawled"]), data["window"]["label"]))
     build_csv(data)
