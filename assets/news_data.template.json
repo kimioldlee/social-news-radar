@@ -359,6 +359,60 @@
       "mode": "keyword",
       "enabled": true,
       "note": "官网 www.jiupainews.com 为 React 内容后台，无公开列表页；改用官方微博在新浪新闻的 SSR 聚合页"
+    },
+    {
+      "name": "界面·首页",
+      "url": "https://www.jiemian.com/",
+      "parser": "link_list",
+      "media": "界面新闻",
+      "media_type": "融媒",
+      "column": "界面新闻·首页",
+      "base": "https://www.jiemian.com",
+      "url_filter": "/article/\\d+\\.html",
+      "title_include": "消费者报告|315|投诉|被指|违规宣传|跑路|退款|维权|被罚|处罚|调查|曝光|乱象|诈骗|判决|获刑|事故|遇难|受伤|失联|暗访|起底|黑产|虚假|过期|质量|召回|致伤|中毒|纠纷|立案|查处|举报|套路|猫腻|骗|被查|查封|罚款|责令|整改|销毁|损毁|伤人|致死|无罪",
+      "mode": "all",
+      "max_items": 8,
+      "recent_only": true,
+      "enabled": true,
+      "note": "通用 link_list 解析；只收消费维权/调查/事件稿，日期取抓取日",
+      "title_exclude": "投资早报|A股|股价|收购|增持|回购|财报|营收|IPO|证监会|编程工具|AI应用|Agent|芯片|发布会|早报|日报|周报|盘点|股权|上市公司|融资|估值|研报|概念股|板块|地方新闻精选|地方新闻",
+      "title_max_len": 70
+    },
+    {
+      "name": "界面·互联网日常",
+      "url": "https://www.jiemian.com/lists/6.html",
+      "parser": "link_list",
+      "media": "界面新闻",
+      "media_type": "融媒",
+      "column": "界面新闻·互联网日常",
+      "base": "https://www.jiemian.com",
+      "url_filter": "/article/\\d+\\.html",
+      "title_include": "消费者报告|315|投诉|被指|违规宣传|跑路|退款|维权|被罚|处罚|调查|曝光|乱象|诈骗|判决|获刑|事故|遇难|受伤|失联|暗访|起底|黑产|虚假|过期|质量|召回|致伤|中毒|纠纷|立案|查处|举报|套路|猫腻|骗|被查|查封|罚款|责令|整改|销毁|损毁|伤人|致死|无罪",
+      "mode": "all",
+      "max_items": 6,
+      "recent_only": true,
+      "enabled": true,
+      "note": "平台治理/消费维权快评，日期取抓取日",
+      "title_exclude": "投资早报|A股|股价|收购|增持|回购|财报|营收|IPO|证监会|编程工具|AI应用|Agent|芯片|发布会|早报|日报|周报|盘点|股权|上市公司|融资|估值|研报|概念股|板块|地方新闻精选|地方新闻",
+      "title_max_len": 70
+    },
+    {
+      "name": "新京报·深度",
+      "url": "https://www.bjnews.com.cn/shendu",
+      "parser": "link_list",
+      "media": "新京报",
+      "media_type": "融媒",
+      "column": "新京报·深度",
+      "base": "https://www.bjnews.com.cn",
+      "url_filter": "/detail/\\d+\\.html",
+      "title_include": "调查|暗访|判决|无罪|维权|诈骗|事故|遇难|失联|曝光|乱象|黑产|起底|处罚|获刑|纠纷|立案|查处|消费者",
+      "mode": "all",
+      "max_items": 6,
+      "recent_only": true,
+      "enabled": true,
+      "note": "社会调查/司法个案，日期取抓取日",
+      "title_exclude": "投资早报|A股|股价|收购|增持|回购|财报|营收|IPO|证监会|编程工具|AI应用|Agent|芯片|发布会|早报|日报|周报|盘点|股权|上市公司|融资|估值|研报|概念股|板块|地方新闻精选|地方新闻",
+      "title_max_len": 70
     }
   ],
   "keywords": {
@@ -629,6 +683,39 @@
         {
           "name": "九派·官方微博（新浪新闻聚合页）",
           "url": "https://sina.cn/media/7516679696"
+        }
+      ]
+    },
+    {
+      "group": "拓展源（2026-11-11 新增，可继续按 link_list 模式扩展）",
+      "items": [
+        {
+          "name": "界面新闻·首页（消费维权/调查稿）",
+          "url": "https://www.jiemian.com/"
+        },
+        {
+          "name": "界面新闻·互联网日常",
+          "url": "https://www.jiemian.com/lists/6.html"
+        },
+        {
+          "name": "界面消费者报告专题（历史调查稿库）",
+          "url": "https://m.jiemian.com/lists/644_1.html"
+        },
+        {
+          "name": "新京报·深度",
+          "url": "https://www.bjnews.com.cn/shendu"
+        },
+        {
+          "name": "新京报·调查热榜",
+          "url": "https://www.bjnews.com.cn/depth/45.html"
+        },
+        {
+          "name": "人民网·社会万象",
+          "url": "http://society.people.com.cn/GB/1062/index.html"
+        },
+        {
+          "name": "央视《焦点访谈》栏目",
+          "url": "https://tv.cctv.com/lm/jdft/"
         }
       ]
     }

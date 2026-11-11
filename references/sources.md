@@ -68,6 +68,20 @@
 - 央视网评论 `https://opinion.cctv.com/`（深度报道）、央视《焦点访谈》《每周质量报告》；新华网民生；工人日报 / 中工网权益版；中国新闻周刊、新京报、南方都市报、界面调查、大象新闻调查组、海报新闻「独立调查」。
 - 典型链路：官媒原发深度稿 → 平台号 / 融媒体同步 → 多家融媒跟进通报与个案。
 
+## 拓展新闻来源与通用 link_list parser（2026-11-11）
+
+- 新增 `parse_link_list()`，注册为 `parser: link_list`。**拓展源只需改 `news_data.json` 的 `sources` 配置，无需写代码**。字段：`url`、`media` / `column`、`base`、`url_filter`（稿件 URL 正则）、`title_include` / `title_exclude`（标题正反筛选）、`title_max_len`（默认 70，过滤「标题+摘要+[全文]」混合文本）、`date_from_url`（从 URL 抽 `YYYY-MM-DD` 的三组捕获）、`mode`、`max_items`、`recent_only`。`crawl()` 支持按源 `max_items` 覆盖全局 `--max-per-source`。
+- 实测可抓（SSR，含中文标题链接）：
+  - 界面新闻首页 `https://www.jiemian.com/`（约 99 条）、`/lists/6.html` 互联网日常（37 条）、`m.jiemian.com/lists/644_1.html` 界面消费者报告（20 条历史调查稿库）、`/lists/2.html` 商业（82 条）。稿件 URL `/article/<数字>.html`。
+  - 新京报 `https://www.bjnews.com.cn/shendu`（深度，17 条）、`/depth/45.html`（调查热榜，51 条，但混首页导航稿）。稿件 URL `/detail/<数字>.html`。首页 60 条。
+  - 人民网社会 `http://society.people.com.cn/`（49 条）与 `/GB/1062/index.html` 社会万象（31 条，多为 2026-06 旧稿）。
+  - 大众网 `https://www.dzwww.com/`（141 条，导航文字多需强清洗）。
+- 实测不可抓 / 不推荐：腾讯新闻首页、`/ch/society`、`new.qq.com/ch/society`、`/omn/author/...` 全为 CSR 空壳（0 中文标题链接），只有 `rain/a/文章页` 是 SSR；`news.qq.com/rain/a/20261110A038GR00` 那类聚合转载无法用列表源发现。中国新闻周刊 `inewsweek.cn` 编码异常、0 标题；`hnrbp.com` 不是大象新闻（被短剧站占用）；央视 `tv.cctv.com/lm/jdft/` 栏目页稿件链接由 JS 加载。界面 `www.jiemian.com/lists/1.html` 偶发 403，`/lists/644_1.html` PC 版 404（只有移动版可用）。
+- **本次新增 3 个自动源**：界面·首页、界面·互联网日常、新京报·深度，均配 `title_include`（消费维权/调查/司法/事件词）与 `title_exclude`（投资早报、A股、收购、证监会、编程工具、AI应用、芯片、早报/日报/盘点、地方新闻精选等），`max_items` 分别 8/6/6。实跑贡献 **9 条干净稿**（医美水光针调包、婚纱店跑路、鲸鱼APP无法提现、AI盗用算力案、共享寄存柜退款难、无罪判决、断亲社会调查等）。
+- 教训：直接把泛首页加进采集会带入大量财经/科技/摘要噪声（界面首页 78 条里聚焦过滤只挡掉 10 条）。**必须先 `title_include` 精准收窄，再让聚焦过滤兜底**；`[全文]` 与超长文本要拦掉，否则会把摘要当成标题。
+- 日期限制：这几个列表页的卡片日期多为「1天前 / 08/17」相对格式，未做逐条解析，统一取抓取日，`note` 里已标注。「界面消费者报告」是历史专题稿库，只放进 `channels` 人工入口，不进每日抓取，避免旧稿被标成当天、污染时间排序。
+- `channels` 新增「拓展源」组，收录界面消费者报告专题、新京报调查热榜、人民网社会万象、央视焦点访谈等人工入口，便于继续按此模式扩展。
+
 ## 社会民生聚焦（过滤政务通知类）
 
 - 需求：用户明确「不需要政务通知类新闻，需要社会民生强相关的事件报道」。看板里混进了政策发布、会议部署、机构宣传、表彰、讣告、时政要闻。

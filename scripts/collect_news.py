@@ -399,6 +399,46 @@ def parse_jiupai_sina(body, source):
     return items
 
 
+def parse_link_list(body, source):
+    """通用列表页 parser：按 url_filter 抽稿件链接，标题交 clean_title 清洗。
+
+    拓展来源时只需在 news_data.json 配置 link_pattern / url_filter / base /
+    date_from_url / media / column，不必再写站点专用函数。
+    """
+    pat = source.get("link_pattern", r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>')
+    url_re = re.compile(source.get("url_filter", r".+"))
+    title_re = re.compile(source["title_include"]) if source.get("title_include") else None
+    title_ban = re.compile(source["title_exclude"]) if source.get("title_exclude") else None
+    max_len = source.get("title_max_len", 70)
+    base = source.get("base", "")
+    date_pat = source.get("date_from_url")
+    items, seen = [], set()
+    for href, inner in re.findall(pat, body, re.S):
+        if not url_re.search(href):
+            continue
+        url = href if href.startswith("http") else base + href
+        title = clean_title(inner)
+        if not title or len(title) < 8:
+            continue
+        # 部分列表页把「标题 + 摘要 + [全文]」塞进同一个 <a>，只取纯标题
+        if re.search(r"\[全文\]|阅读全文|\[详情\]", title) or len(title) > max_len:
+            continue
+        if title_re and not title_re.search(title):
+            continue
+        if title_ban and title_ban.search(title):
+            continue
+        date = ""
+        if date_pat:
+            m = re.search(date_pat, href)
+            if m and len(m.groups()) >= 3:
+                date = "{}-{}-{}".format(m.group(1), m.group(2), m.group(3))
+        it = make_item(source, title, url, date=date)
+        if it and url not in seen:
+            seen.add(url)
+            items.append(it)
+    return items
+
+
 PARSERS = {
     "thepaper": parse_thepaper,
     "rss": parse_rss,
@@ -407,6 +447,7 @@ PARSERS = {
     "cqcb": parse_cqcb,
     "ctdsb": parse_ctdsb,
     "jiupai_sina": parse_jiupai_sina,
+    "link_list": parse_link_list,
 }
 
 
@@ -584,7 +625,7 @@ def crawl(data, days, max_per_source):
         if src.get("mode", "keyword") == "keyword":
             hit = [x for x in got if x["topics"]]
             got = hit if hit else got[:8]   # 无命中时留少量样本便于浏览
-        got = got[:max_per_source]
+        got = got[:src.get("max_items", max_per_source)]
         print("   {} 条".format(len(got)))
         fresh.extend(got)
         time.sleep(1.2)

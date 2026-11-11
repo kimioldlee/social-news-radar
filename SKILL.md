@@ -55,6 +55,7 @@ python <skill-dir>/scripts/collect_news.py --out . --focus 0 --no-fetch    # 查
 | `cqcb` | 上游新闻 | `/channel/29` 调查、`/14` 法治、`/6` 评论 |
 | `ctdsb` | 极目新闻 | `/c1716` 世相、`/c1738` 消费、`/c1659` 健康、`/c1673` 科教 |
 | `jiupai_sina` | 九派新闻 | 官方微博在新浪新闻的 SSR 聚合页 |
+| `link_list` | 界面新闻 / 新京报 | 通用列表页，按 URL 正则 + 标题特征筛选 |
 | `rss` / `homepage` | 通用兜底 | RSS 或页面中文长标题链接 |
 
 完整的 URL 格式、栏目 ID 表、反爬经验与扩展步骤见 `references/sources.md`。
@@ -78,6 +79,12 @@ python <skill-dir>/scripts/collect_news.py --out . --focus 0 --no-fetch    # 查
 - **社会民生聚焦**：默认只保留强相关的**事件报道**，过滤政务通知、政策发布、会议部署、机构宣传与表彰、时政要闻，以及暖闻、校园趣闻、健康科普等软内容。三级判定：`FOCUS_HARD` 命中即排除；`FOCUS_SOFT` 命中且标题无具体人物才排除，避免误删人物报道；`FOCUS_FLUFF` 只对「栏目更新」兜底稿生效。过滤只作用于看板与 CSV，数据文件保留全部稿件，`--focus 0` 可查看全量，四个词表可直接增删。
 - **同题去重**：跨媒体、跨批次按事件聚类。标题完全一致无条件合并；相似度 ≥ 0.48 直接合并；0.28～0.48 之间若共享具体实体子串（最长公共子串 ≥ 3 字且不含「公安局／警情通报／日期」等模板标记）也合并，用来抓「同一事件的不同进展」（如 5 人遇难 → 14 人遇难 → 25 人救治）；均要求日期差 ≤ 1 天。每簇保留一条主稿（含数字多、信息更全的优先），其余媒体以「同题 N 家」挂在主稿下，不丢链接。需要看全部原始转载时用 `--dedup 0`。
 
+## 拓展新闻来源
+
+优先用 `link_list` 通用 parser，**只改 `news_data.json` 的 `sources` 配置，不必写代码**。可用字段：`url`（列表页）、`parser: link_list`、`media` / `column`、`base`（相对链接补全）、`url_filter`（稿件 URL 正则）、`title_include` / `title_exclude`（标题正反筛选正则）、`title_max_len`、`date_from_url`（从 URL 抽日期的三组捕获正则）、`mode`、`max_items`、`recent_only`。
+
+新增源必须先验证三件事：页面是否服务端渲染（Python 能直接读到中文标题）、稿件 URL 是否稳定、抓到的内容是否真的属于「社会民生强相关事件报道」。泛首页往往混大量财经/科技稿，务必配好 `title_include` + `title_exclude`，否则会污染看板。已验证可用与不可用清单见 `references/sources.md`。
+
 ## 扩展新站
 
-阅读 `references/sources.md` 的「新增站点」小节，按 parser 接口实现一个函数并注册到 `PARSERS`，随后在 `news_data.json` 的 `sources` 增加一条配置即可。
+若 `link_list` 无法覆盖（如微博式卡片、加密 ID、异步接口），阅读 `references/sources.md` 的「新增站点」小节，按 parser 接口实现一个函数并注册到 `PARSERS`，随后在 `news_data.json` 的 `sources` 增加一条配置即可。
