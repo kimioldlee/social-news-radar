@@ -126,6 +126,39 @@ def clean_title(inner):
     return text.strip()
 
 
+# 社会民生聚焦：排除政务通知 / 政策发布 / 会议部署 / 机构宣传类稿件。
+# HARD 命中即排除；SOFT 命中但标题里没有任何具体人物时才排除（避免误删人物报道）。
+FOCUS_HARD = (
+    "习近平", "总书记", "中全会", "学习贯彻", "重要讲话", "会见", "致电", "复信",
+    "政治局", "国务院", "发文", "印发", "出台", "条例", "草案", "二审", "常务会议",
+    "召开会议", "工作专班", "挂牌督办", "举一反三", "宣传周", "拉开帷幕", "启动仪式",
+    "亮相", "获授", "授予", "送达", "开幕", "揭牌", "表彰", "评选", "逝世", "秋招",
+    "正式落地", "专项计划", "专项规划", "征求意见", "集中整治", "排查隐患", "部署",
+    "联合发文", "新图景", "正式实施",
+)
+FOCUS_SOFT = ("活动", "会议", "发布", "通知", "方案", "规划", "措施", "政策", "走进校园", "开展")
+FOCUS_PEOPLE = (
+    "男子", "女子", "老人", "学生", "家长", "患者", "家属", "消费者", "商家", "商户",
+    "骑手", "教师", "患儿", "小伙", "大爷", "婆婆", "硕士", "大学生", "工人",
+    "农民工", "受害者", "嫌疑人", "孩子", "市民", "村民", "护士", "医生", "民警",
+    "司机", "摊主", "游客", "乘客", "博主", "网友", "毕业生", "主播", "班主任",
+    "当事人", "住户", "居民", "孕妇", "学子",
+)
+FOCUS_ENABLED = True
+
+
+def is_social_focus(x):
+    """判定是否为社会民生强相关的事件报道；政务通知类返回 False。"""
+    if not FOCUS_ENABLED:
+        return True
+    t = x.get("title", "")
+    if any(k in t for k in FOCUS_HARD):
+        return False
+    if any(k in t for k in FOCUS_SOFT) and not any(k in t for k in FOCUS_PEOPLE):
+        return False
+    return True
+
+
 # 报道形态自动归类：按标题特征顺序匹配，越具体的规则越靠前
 FORM_RULES = [
     ("评论", ("马上评", "锐评", "时评", "社论", "零度时评", "言短意长", "评丨", "评｜",
@@ -557,7 +590,12 @@ def crawl(data, days, max_per_source):
     return out
 
 
-def all_items(data):
+def all_items(data, apply_focus=True):
+    """生成看板 / CSV 的条目：时间窗 + 可选「只要社会民生事件报道」过滤。
+
+    main() 去重时传 apply_focus=False，保证被聚焦过滤排除的稿仍留在数据文件里，
+    关闭 --focus 或调整词表后可随时恢复显示。
+    """
     cutoff = window_cutoff()
     curated = []
     for x in data.get("curated", []):
@@ -566,7 +604,10 @@ def all_items(data):
         y["source"] = x.get("media", "")
         curated.append(y)
     crawled = [dict(x, bucket="实时抓取") for x in data.get("crawled", [])]
-    return [x for x in curated + crawled if within_window(x, cutoff)]
+    merged = [x for x in curated + crawled if within_window(x, cutoff)]
+    if apply_focus:
+        merged = [x for x in merged if is_social_focus(x)]
+    return merged
 
 
 def safe_write(path, text, encoding="utf-8"):
@@ -774,7 +815,8 @@ document.getElementById('howto').innerHTML = [
   '<b>⑤ 四家融媒体解析规则</b>：封面新闻（首页 + 封面深镜专题页，<code>/news/&lt;加密ID&gt;</code>）、上游新闻（<code>/channel/29</code> 调查、<code>/14</code> 法治，URL 自带日期）、极目新闻（<code>/c1716</code> 世相、<code>/c1738</code> 消费、<code>/c1659</code> 健康）、九派新闻（官网为 React 内容后台无公开列表页，改抓其官方微博在新浪新闻的聚合页）。标题统一剥离「来源+时间+阅读量」噪音，跨源同题按标题前 18 字模糊去重。',
   '<b>⑥ 自动化</b>：运行 <code>python scripts/collect_news.py --out &lt;输出目录&gt;</code> 抓取并重建看板与 CSV；<code>--no-fetch</code> 只重建，<code>--days N</code> 控制单源抓取天数，<code>--window N</code> 控制全局保留窗口（默认 30 天，0 为不限，超期稿件会从数据文件物理剔除），<code>--init</code> 重置为模板数据。看板默认按时间倒序，可切换为时间正序；精选样本与实时抓取统一按日期排序，不再按批次分组，避免上周精选稿压住今天的新稿。',
   '<b>⑦ 同题去重</b>：跨媒体、跨批次按事件聚类，标题完全一致无条件合并；其余用字符 bigram 的 Jaccard / 重叠系数判断，相似度达阈值且日期相差不超过 1 天才算同一事件。每簇保留一条主稿（精选样本与官媒优先，同级取更新、信息更全的），其余媒体以「同题 N 家」标签和可点链接挂在主稿下，信息不丢失。<code>--dedup 0.48</code> 可调阈值，<code>--dedup 0</code> 关闭。',
-  '<b>⑧ 报道形态</b>：「全部形态」下拉的所有选项由当前数据动态生成，每次重建看板都会同步刷新。精选样本保留人工标注；实时抓取稿按标题关键词自动归入评论 / 舆论监督 / 深度调查 / 通报回应 / 个案维权 / 政策服务，无命中的落到「栏目更新」兜底（多为暖闻、校园活动、健康科普等）。规则表在 <code>scripts/collect_news.py</code> 的 <code>FORM_RULES</code>，可直接增删关键词。'
+  '<b>⑧ 报道形态</b>：「全部形态」下拉的所有选项由当前数据动态生成，每次重建看板都会同步刷新。精选样本保留人工标注；实时抓取稿按标题关键词自动归入评论 / 舆论监督 / 深度调查 / 通报回应 / 个案维权 / 政策服务，无命中的落到「栏目更新」兜底（多为暖闻、校园活动、健康科普等）。规则表在 <code>scripts/collect_news.py</code> 的 <code>FORM_RULES</code>，可直接增删关键词。',
+  '<b>⑨ 社会民生聚焦</b>：默认只显示强相关的<b>事件报道</b>，自动过滤政务通知、政策发布、会议部署、机构宣传与表彰、时政要闻。判定分两级：<code>FOCUS_HARD</code> 命中即排除；<code>FOCUS_SOFT</code> 命中但标题里没有任何具体人物（<code>FOCUS_PEOPLE</code>）才排除，避免误删人物报道。被过滤稿仍完整保存在 news_data.json，用 <code>--focus 0</code> 可查看全量；三个词表可直接增删关键词。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -828,8 +870,9 @@ function stats(){
   const win=(D.window&&D.window.label)?D.window.label:'不限时间';
   const ded=(D.dedup&&D.dedup.merged)?' · 同题去重合并 '+D.dedup.merged+' 条 / '+D.dedup.clusters+' 个事件簇（阈值 '+D.dedup.threshold+'）':'';
   const fm=(D.forms)?' · 实时稿形态归类 '+D.forms.classified+' 条（'+D.forms.fallback+' 条兜底）':'';
+  const fc=(D.focus&&D.focus.enabled)?' · 社会民生聚焦过滤 '+D.focus.excluded+' 条政务/宣传稿':'';
   document.getElementById('stats').innerHTML=d.map(x=>'<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')
-    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条'+esc(ded)+esc(fm)+'</span></div>';
+    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条'+esc(ded)+esc(fm)+esc(fc)+'</span></div>';
 }
 document.getElementById('export').onclick=()=>{
   const arr=filtered();
@@ -849,7 +892,12 @@ stats();render();
 
 
 def build_html(data):
-    payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
+    # 看板 payload 只放聚焦过滤后的条目；数据文件本身仍保留全量，--focus 0 可随时恢复
+    focused = all_items(data)
+    view = dict(data)
+    view["curated"] = [x for x in focused if x.get("bucket") == "精选样本"]
+    view["crawled"] = [x for x in focused if x.get("bucket") == "实时抓取"]
+    payload = json.dumps(view, ensure_ascii=False).replace("<", "\\u003c")
     out = HTML_TEMPLATE.replace("__DATA_JSON__", payload)
     path = safe_write(HTML_FILE, out, "utf-8")
     if path:
@@ -862,19 +910,22 @@ KEYWORDS = {}
 
 
 def main():
-    global KEYWORDS, WINDOW_DAYS, DEDUP_THRESHOLD
+    global KEYWORDS, WINDOW_DAYS, DEDUP_THRESHOLD, FOCUS_ENABLED
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-fetch", action="store_true", help="跳过采集，只重建看板与 CSV")
     ap.add_argument("--days", type=int, default=7, help="单源抓取时保留最近 N 天")
     ap.add_argument("--window", type=int, default=30, help="全局只保留近 N 天稿件，0 表示不限（默认 30）")
     ap.add_argument("--dedup", type=float, default=0.48,
                     help="同题去重相似度阈值，0 表示关闭（默认 0.48）")
+    ap.add_argument("--focus", type=int, default=None,
+                    help="1 只保留社会民生强相关事件报道，0 显示全部（默认 1）")
     ap.add_argument("--max-per-source", type=int, default=20, help="每个源最多保留条数")
     ap.add_argument("--out", default=os.getcwd(), help="输出目录，默认当前工作目录")
     ap.add_argument("--init", action="store_true", help="用模板重新初始化数据文件（覆盖已有数据）")
     args = ap.parse_args()
     WINDOW_DAYS = args.window
     DEDUP_THRESHOLD = args.dedup
+    FOCUS_ENABLED = True if args.focus is None else bool(args.focus)
 
     configure_output(args.out)
     if args.init or not os.path.exists(DATA_FILE):
@@ -909,16 +960,18 @@ def main():
     for x in data["crawled"]:
         x["form"] = classify_form(x["title"])
 
-    # 同题去重：精选与实时统一聚类，物理剔除重复稿；主稿保留其他媒体的链接
+    # 同题去重：用不过滤聚焦的全量数据聚类，保证被排除稿仍留在数据文件里可随时恢复
     removed_dup = 0
     if DEDUP_THRESHOLD > 0:
-        merged, removed_dup = dedup_items(all_items(data), DEDUP_THRESHOLD)
+        merged, removed_dup = dedup_items(all_items(data, apply_focus=False), DEDUP_THRESHOLD)
         buckets = [(x.pop("bucket", ""), dict(x)) for x in merged]
         data["curated"] = [x for b, x in buckets if b == "精选样本"]
         data["crawled"] = [x for b, x in buckets if b == "实时抓取"]
     all_kept = data["curated"] + data["crawled"]
     classified = sum(1 for x in data["crawled"] if x.get("form") != "栏目更新")
     data["forms"] = {"classified": classified, "fallback": len(data["crawled"]) - classified}
+    excluded = sum(1 for x in all_items(data, apply_focus=False) if not is_social_focus(x))
+    data["focus"] = {"enabled": bool(FOCUS_ENABLED), "excluded": excluded}
     data["dedup"] = {
         "threshold": DEDUP_THRESHOLD,
         "removed": removed_dup,
@@ -934,6 +987,9 @@ def main():
         print("✓ 同题去重：合并 {} 条重复报道（阈值 {}）".format(removed_dup, DEDUP_THRESHOLD))
     print("✓ 形态归类：{} 条实时稿已细分，{} 条保留「栏目更新」兜底".format(
         data["forms"]["classified"], data["forms"]["fallback"]))
+    if FOCUS_ENABLED:
+        print("✓ 社会民生聚焦：过滤 {} 条政务通知 / 政策发布 / 机构宣传稿（--focus 0 可查看全量）".format(
+            data["focus"]["excluded"]))
     print("✓ 数据   →", DATA_FILE, "（精选 {} + 实时 {} 条，窗口 {}）".format(
         len(data["curated"]), len(data["crawled"]), data["window"]["label"]))
     build_csv(data)
