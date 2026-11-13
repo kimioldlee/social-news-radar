@@ -252,6 +252,35 @@ def classify_form(title):
     return "栏目更新"
 
 
+def date_from_relative(text):
+    """把「N天前 / N小时前 / 昨天 / MM-DD / YYYY-MM-DD」换算成发布日期。
+
+    各站列表页常用相对时间；无法判断时返回空，由调用方回退到抓取日。
+    """
+    text = text or ""
+    m = re.search(r"(\d{4}-\d{2}-\d{2})", text)
+    if m:
+        return m.group(1)
+    m = re.search(r"(\d+)\s*天前", text)
+    if m:
+        return (datetime.strptime(TODAY, "%Y-%m-%d") - timedelta(days=int(m.group(1)))).strftime("%Y-%m-%d")
+    if "昨天" in text or "昨日" in text:
+        return (datetime.strptime(TODAY, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+    if re.search(r"\d+\s*(?:小时|分钟)前|今天", text):
+        return TODAY
+    m = re.search(r"(?<!\d)(\d{2})-(\d{2})(?!\d)", text)
+    if m:
+        mm, dd = int(m.group(1)), int(m.group(2))
+        year = int(TODAY[:4])
+        if mm > int(TODAY[5:7]):
+            year -= 1
+        try:
+            return datetime(year, mm, dd).strftime("%Y-%m-%d")
+        except ValueError:
+            return ""
+    return ""
+
+
 def make_item(source, title, url, date="", note=""):
     """统一构造一条抓取结果，供各站点 parser 复用。"""
     title = clean_title(title)
@@ -261,6 +290,7 @@ def make_item(source, title, url, date="", note=""):
         title = title[:88] + "…"
     return {
         "date": date or TODAY,
+        "date_source": "published" if date else "fetch_day",
         "media": source.get("media", source.get("name", "")),
         "type": source.get("media_type", "融媒"),
         "column": source.get("column", ""),
@@ -275,7 +305,17 @@ def make_item(source, title, url, date="", note=""):
 
 
 def parse_thepaper(body, source):
-    """澎湃栏目页为服务端渲染，标题与 newsDetail 链接可直接提取。"""
+    """澎湃栏目页为服务端渲染，标题与 newsDetail 链接可直接提取。
+
+    页面内嵌 JSON-LD ListItem，含每篇稿的 datePublished；优先用它做真实发布日期，
+    不再用抓取当天冒充发布时间（否则同一篇稿每次重跑日期都会滚动）。
+    """
+    date_map = {}
+    for block in re.findall(r'\{"@type":"ListItem".*?\}', body, re.S):
+        u = re.search(r'"url"\s*:\s*"([^"]+newsDetail_forward_\d+)"', block)
+        dp = re.search(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})', block)
+        if u and dp:
+            date_map[u.group(1)] = dp.group(1)
     items = []
     pairs = re.findall(
         r'href="(/newsDetail_forward_\d+)"[^>]*>\s*(?:<[^>]+>\s*)*([^<]{6,120})',
@@ -288,8 +328,10 @@ def parse_thepaper(body, source):
         if not title or url in seen:
             continue
         seen.add(url)
+        published = date_map.get(url, "")
         items.append({
-            "date": datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d"),
+            "date": published or TODAY,
+            "date_source": "published" if published else "fetch_day",
             "media": "澎湃新闻",
             "type": "融媒",
             "column": source.get("column", ""),
@@ -374,7 +416,9 @@ def parse_thecover(body, source):
         url = "https://www.thecover.cn" + path
         if url in seen:
             continue
-        it = make_item(source, inner, url)
+        # 专题页把「封面新闻 26天前 9.3万」「封面新闻 08-31 8.8万」塞在同一个 <a> 里
+        published = date_from_relative(inner)
+        it = make_item(source, inner, url, date=published)
         if it:
             seen.add(url)
             items.append(it)
@@ -406,7 +450,7 @@ def parse_ctdsb(body, source):
             continue
         note = "实时抓取自 " + source.get("name", "")
         if ym:
-            note += "（栏目月份 {}，日期取抓取日）".format(ym)
+            note += "（栏目月份 {}；页面未给发布日期，沿用首次抓取日）".format(ym)
         it = make_item(source, inner, url, note=note)
         if it:
             seen.add(url)
@@ -461,9 +505,12 @@ def parse_link_list(body, source):
     base = source.get("base", "")
     date_pat = source.get("date_from_url")
     items, seen = [], set()
-    for href, inner in re.findall(pat, body, re.S):
+    for match in re.finditer(pat, body, re.S):
+        href, inner = match.group(1), match.group(2)
         if not url_re.search(href):
             continue
+        # 界面 / 新京报把「1天前」「5小时前」放在卡片里 <a> 之后，取邻近文本换算
+        tail = re.sub(r"<[^>]+>", " ", body[match.end():match.end() + 260])
         url = href if href.startswith("http") else base + href
         title = clean_title(inner)
         if not title or len(title) < 8:
@@ -480,6 +527,8 @@ def parse_link_list(body, source):
             m = re.search(date_pat, href)
             if m and len(m.groups()) >= 3:
                 date = "{}-{}-{}".format(m.group(1), m.group(2), m.group(3))
+        if not date:
+            date = date_from_relative(tail)
         it = make_item(source, title, url, date=date)
         if it and url not in seen:
             seen.add(url)
@@ -668,7 +717,10 @@ def dedup_items(items, threshold):
 
 def crawl(data, days, max_per_source):
     fresh = []
-    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    cutoff = (datetime.strptime(TODAY, "%Y-%m-%d") - timedelta(days=days)).strftime("%Y-%m-%d")
+    # 页面未提供发布时间时，沿用同一 URL 首次抓取时记录的日期，防止重跑把日期滚动到今天
+    old_dates = {x["url"]: x["date"] for x in data.get("crawled", [])
+                 if x.get("url") and x.get("date")}
     legacy = {"thepaper_list": "thepaper", "rss": "rss", "homepage": "homepage"}
     for src in data.get("sources", []):
         if not src.get("enabled"):
@@ -702,6 +754,10 @@ def crawl(data, days, max_per_source):
         if key:
             seen_title.add(key)
         out.append(x)
+    for x in out:
+        if x.get("date_source") != "published" and x["url"] in old_dates:
+            x["date"] = old_dates[x["url"]]
+            x["date_source"] = "first_seen"
     wcut = window_cutoff()
     if wcut:
         kept = [x for x in out if within_window(x, wcut)]
@@ -943,7 +999,8 @@ document.getElementById('howto').innerHTML = [
   '<b>⑦ 同题去重</b>：跨媒体、跨批次按事件聚类，标题完全一致无条件合并；其余用字符 bigram 的 Jaccard / 重叠系数判断，相似度达阈值且日期相差不超过 1 天才算同一事件。每簇保留一条主稿（精选样本与官媒优先，同级取更新、信息更全的），其余媒体以「同题 N 家」标签和可点链接挂在主稿下，信息不丢失。<code>--dedup 0.48</code> 可调阈值，<code>--dedup 0</code> 关闭。',
   '<b>⑧ 报道形态</b>：「全部形态」下拉的所有选项由当前数据动态生成，每次重建看板都会同步刷新。精选样本保留人工标注；实时抓取稿按标题关键词自动归入评论 / 舆论监督 / 深度调查 / 通报回应 / 个案维权 / 政策服务，无命中的落到「栏目更新」兜底（多为暖闻、校园活动、健康科普等）。规则表在 <code>scripts/collect_news.py</code> 的 <code>FORM_RULES</code>，可直接增删关键词。',
   '<b>⑨ 社会民生聚焦</b>：默认只显示强相关的<b>事件报道</b>，过滤政务通知、政策发布、会议部署、机构宣传与表彰、时政要闻，以及暖闻、校园趣闻、健康科普等软内容。判定分四级：<code>FOCUS_HARD</code> 命中即排除；<code>FOCUS_SOFT</code> 命中但标题里没有任何具体人物（<code>FOCUS_PEOPLE</code>）才排除，避免误删人物报道；<code>FOCUS_FLUFF</code> 剔除软内容；<code>FOCUS_KEEP</code> 是「栏目更新」兜底稿的正向白名单，无具体人物 / 事件 / 结构性问题的资讯稿一律不要。抓取阶段即用此标准准入，避免宽泛标签词表把噪声带进数据文件。被过滤稿仍完整保存在 news_data.json，用 <code>--focus 0</code> 可查看全量；四个词表可直接增删关键词。',
-  '<b>⑩ 社会问题标签</b>：标签按<b>报道折射出的社会问题</b>命名，共 7 类（公共资源与供需 / 制度落地困境 / 灰色产业链 / 权益侵害与维权 / 公共安全与问责 / 弱势群体与保障 / 基层治理与公平），<b>不以题材命名</b>——「血」只是识别线索，不是标签。《救命血，为何一血难求？》因此同时归入「公共资源与供需」「制度落地困境」「灰色产业链」，与所有折射同类问题的报道一起被筛出。精选样本与实时抓取稿按同一套规则打标，原始细标签保留在 <code>tags_raw</code>。'
+  '<b>⑩ 社会问题标签</b>：标签按<b>报道折射出的社会问题</b>命名，共 7 类（公共资源与供需 / 制度落地困境 / 灰色产业链 / 权益侵害与维权 / 公共安全与问责 / 弱势群体与保障 / 基层治理与公平），<b>不以题材命名</b>——「血」只是识别线索，不是标签。《救命血，为何一血难求？》因此同时归入「公共资源与供需」「制度落地困境」「灰色产业链」，与所有折射同类问题的报道一起被筛出。精选样本与实时抓取稿按同一套规则打标，原始细标签保留在 <code>tags_raw</code>。',
+  '<b>⑪ 发布日期</b>：显示的是稿件<b>真实发布日期</b>，不是抓取当天。澎湃栏目页 JSON-LD 的 <code>datePublished</code>、上游 URL 自带日期、九派微博时间、封面 / 界面 / 新京报的「N天前」「MM-DD」均已解析；页面确实未给日期的按 URL 沿用<b>首次抓取日</b>，重复运行不会把旧稿日期滚动到今天。每条带 <code>date_source</code>（published / first_seen / fetch_day）可追溯。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -1040,7 +1097,8 @@ def main():
     global KEYWORDS, WINDOW_DAYS, DEDUP_THRESHOLD, FOCUS_ENABLED
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-fetch", action="store_true", help="跳过采集，只重建看板与 CSV")
-    ap.add_argument("--days", type=int, default=7, help="单源抓取时保留最近 N 天")
+    ap.add_argument("--days", type=int, default=30,
+                    help="单源抓取保留最近 N 天（默认与全局窗口一致；日期现为真实发布日期）")
     ap.add_argument("--window", type=int, default=30, help="全局只保留近 N 天稿件，0 表示不限（默认 30）")
     ap.add_argument("--dedup", type=float, default=0.48,
                     help="同题去重相似度阈值，0 表示关闭（默认 0.48）")
