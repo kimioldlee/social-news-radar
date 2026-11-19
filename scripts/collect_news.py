@@ -895,7 +895,7 @@ h1{font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.4px}
 .stat span{color:var(--muted);font-size:12px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-input[type=text],select{border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--text);background:#fff;outline:none}
+input[type=text],input[type=date],select{border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--text);background:#fff;outline:none}
 input[type=text]{flex:1;min-width:220px}
 input[type=text]:focus,select:focus{border-color:var(--blue)}
 button{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:8px;padding:8px 13px;font-size:13px;cursor:pointer}
@@ -962,6 +962,15 @@ footer{margin-top:30px;color:var(--muted);font-size:12px;border-top:1px solid va
       <option value="time_desc">时间 ↓ 最新优先（全部条目）</option>
       <option value="time_asc">时间 ↑ 最早优先（全部条目）</option>
     </select>
+    <select id="fDateRange" autocomplete="off">
+      <option value="7">近 7 天</option>
+      <option value="30" selected>近 30 天（一个月）</option>
+      <option value="90">近 90 天</option>
+      <option value="all">全部日期</option>
+      <option value="custom">自定义范围</option>
+    </select>
+    <input type="date" id="dateFrom" style="display:none">
+    <input type="date" id="dateTo" style="display:none">
     <button id="reset">重置</button>
     <button class="primary" id="export">导出 CSV</button>
     <button id="refresh">⟳ 刷新数据</button>
@@ -1038,11 +1047,31 @@ document.getElementById('howto').innerHTML = [
   '<b>⑨ 社会民生聚焦</b>：默认只显示强相关的<b>事件报道</b>，过滤政务通知、政策发布、会议部署、机构宣传与表彰、时政要闻，以及暖闻、校园趣闻、健康科普等软内容。判定分四级：<code>FOCUS_HARD</code> 命中即排除；<code>FOCUS_SOFT</code> 命中但标题里没有任何具体人物（<code>FOCUS_PEOPLE</code>）才排除，避免误删人物报道；<code>FOCUS_FLUFF</code> 剔除软内容；<code>FOCUS_KEEP</code> 是「栏目更新」兜底稿的正向白名单，无具体人物 / 事件 / 结构性问题的资讯稿一律不要。抓取阶段即用此标准准入，避免宽泛标签词表把噪声带进数据文件。被过滤稿仍完整保存在 news_data.json，用 <code>--focus 0</code> 可查看全量；四个词表可直接增删关键词。',
   '<b>⑩ 社会问题标签</b>：标签分两层：7 个按<b>报道折射出的社会问题</b>命名（公共资源与供需 / 制度落地困境 / 灰色产业链 / 权益侵害与维权 / 公共安全与问责 / 弱势群体与保障 / 基层治理与公平），另加 2 个<b>视角</b>标签：「民间疾苦」标记普通人遭遇的生存困境（欠薪、因病致贫、低保、失能、寻人、摆摊生计等），「社会矛盾」标记劳资、分配公平、基层权力、医患 / 消费 / 平台纠纷、群体性对立等冲突性事件，可一键筛出这两类稿，<b>不以题材命名</b>——「血」只是识别线索，不是标签。《救命血，为何一血难求？》因此同时归入「公共资源与供需」「制度落地困境」「灰色产业链」，与所有折射同类问题的报道一起被筛出。精选样本与实时抓取稿按同一套规则打标，原始细标签保留在 <code>tags_raw</code>。',
   '<b>⑪ 发布日期</b>：显示的是稿件<b>真实发布日期</b>，不是抓取当天。澎湃栏目页 JSON-LD 的 <code>datePublished</code>、上游 URL 自带日期、九派微博时间、封面 / 界面 / 新京报的「N天前」「MM-DD」均已解析；页面确实未给日期的按 URL 沿用<b>首次抓取日</b>，重复运行不会把旧稿日期滚动到今天。每条带 <code>date_source</code>（published / first_seen / fetch_day）可追溯。',
-  '<b>⑫ 即时刷新</b>：工具栏「⟳ 刷新数据」可立即比对服务端 HTML 里内嵌的数据快照；打开「自动检测」后每 30 秒检查一次，后台运行 <code>collect_news.py</code> 重建看板，页面会<b>自动发现并重载</b>，无需手动 F5。看板是单文件离线网页，<b>前端无法触发采集</b>——要拿新新闻仍需先跑一次脚本。以 <code>file://</code> 直接打开时 fetch 受限，按钮退化为直接重载页面，状态栏会提示。'
+  '<b>⑫ 即时刷新</b>：工具栏「⟳ 刷新数据」可立即比对服务端 HTML 里内嵌的数据快照；打开「自动检测」后每 30 秒检查一次，后台运行 <code>collect_news.py</code> 重建看板，页面会<b>自动发现并重载</b>，无需手动 F5。看板是单文件离线网页，<b>前端无法触发采集</b>——要拿新新闻仍需先跑一次脚本。以 <code>file://</code> 直接打开时 fetch 受限，按钮退化为直接重载页面，状态栏会提示。',
+  '<b>⑬ 日期筛选</b>：工具栏日期下拉默认「<b>近 30 天（一个月）</b>」，可切近 7 天 / 近 90 天 / 全部日期 / 自定义起止范围。以<b>数据快照日</b>（<code>D.updated</code>）为基准，例如快照 2026-11-19 时近 30 天即 2026-10-20 起；计数栏会显示当前范围与基准日。筛选同时作用于列表与导出的 CSV，重置按钮回到近 30 天。要看更早的新闻，需先用 <code>--window 0</code> 重新生成数据，页面才有可选条目。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+// 日期筛选：以数据快照日（D.updated）为基准，避免数据与系统日期不一致时算错
+function snapshotDate(){return D.updated||new Date().toISOString().slice(0,10);}
+function shiftDate(base,days){const dt=new Date(base+'T00:00:00Z');dt.setUTCDate(dt.getUTCDate()+days);return dt.toISOString().slice(0,10);}
+function dateBounds(){
+  const el=document.getElementById('fDateRange');
+  const dr=el.value,base=snapshotDate();
+  let lo='',hi='',label='';
+  if(dr==='custom'){
+    lo=document.getElementById('dateFrom').value||'';
+    hi=document.getElementById('dateTo').value||'';
+    label=(lo||'不限')+' ~ '+(hi||'不限');
+  }else if(dr==='all'){label='全部日期';}
+  else{
+    lo=shiftDate(base,-parseInt(dr,10));
+    label=el.selectedOptions[0].text+'（'+lo+' 起，基准 '+base+'）';
+  }
+  return {lo:lo,hi:hi,label:label};
+}
 function filtered(){
+  const db=dateBounds();
   const q=document.getElementById('q').value.trim().toLowerCase();
   const ty=document.getElementById('fType').value;
   const fo=fForm.value, bu=document.getElementById('fBucket').value;
@@ -1053,6 +1082,9 @@ function filtered(){
     if(bu&&x.bucket!==bu)return false;
     if(on.length&&!on.every(t=>(x.topics||[]).includes(t)))return false;
     if(q){const s=[x.title,x.media,x.column,x.note,(x.topics||[]).join(' ')].join(' ').toLowerCase();if(!s.includes(q))return false;}
+    if((db.lo||db.hi)&&!x.date)return false;
+    if(db.lo&&x.date<db.lo)return false;
+    if(db.hi&&x.date>db.hi)return false;
     return true;
   });
   // 精选样本与实时抓取统一按日期排序，不再按批次分组（否则上周精选会压住今天的新稿）
@@ -1063,7 +1095,7 @@ function filtered(){
 }
 function render(){
   const arr=filtered();
-  document.getElementById('count').textContent='共 '+arr.length+' 条（全部 '+items.length+' 条）';
+  document.getElementById('count').textContent='共 '+arr.length+' 条（全部 '+items.length+' 条）｜'+dateBounds().label;
   const box=document.getElementById('list');
   if(!arr.length){box.innerHTML='<div class="empty">没有匹配的稿件，换个关键词试试</div>';return;}
   box.innerHTML=arr.map(x=>{
@@ -1104,8 +1136,36 @@ document.getElementById('export').onclick=()=>{
   const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='社会民生新闻筛选结果.csv';a.click();
 };
-document.getElementById('reset').onclick=()=>{document.getElementById('q').value='';document.getElementById('fType').value='';fForm.value='';document.getElementById('fBucket').value='';document.getElementById('fSort').value='time_desc';document.querySelectorAll('.chip.on').forEach(x=>x.classList.remove('on'));render();};
-['q','fType','fForm','fBucket','fSort'].forEach(id=>{const el=document.getElementById(id);el.addEventListener(id==='q'?'input':'change',render);});
+document.getElementById('reset').onclick=()=>{
+  document.getElementById('q').value='';
+  document.getElementById('fType').value='';
+  fForm.value='';
+  document.getElementById('fBucket').value='';
+  document.getElementById('fSort').value='time_desc';
+  document.getElementById('fDateRange').value='30';
+  document.getElementById('dateFrom').value='';
+  document.getElementById('dateTo').value='';
+  document.getElementById('dateFrom').style.display='none';
+  document.getElementById('dateTo').style.display='none';
+  document.querySelectorAll('.chip.on').forEach(x=>x.classList.remove('on'));
+  render();
+};
+['q','fType','fForm','fBucket','fSort','fDateRange','dateFrom','dateTo'].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener(id==='q'?'input':'change',()=>{
+    if(id==='fDateRange'){
+      const c=el.value==='custom';
+      const a=document.getElementById('dateFrom'),b=document.getElementById('dateTo');
+      a.style.display=c?'':'none';b.style.display=c?'':'none';
+      if(c){
+        const base=snapshotDate();
+        if(!a.value)a.value=shiftDate(base,-30);
+        if(!b.value)b.value=base;
+      }
+    }
+    render();
+  });
+});
 // 即时刷新：定时比对服务端 HTML 内嵌的数据快照，脚本重建看板后自动重载
 const payloadEl=document.getElementById('payload');
 const CURRENT_PAYLOAD=payloadEl.textContent;
