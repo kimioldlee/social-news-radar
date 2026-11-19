@@ -906,6 +906,9 @@ button.primary:hover{opacity:.9;color:#fff}
 .chip{border:1px solid var(--line);background:#fafbfe;color:var(--muted);border-radius:999px;padding:4px 11px;font-size:12px;cursor:pointer}
 .chip:hover,.chip.on{background:#eaf0ff;border-color:#b9ccff;color:var(--blue)}
 .count{color:var(--muted);font-size:12px;margin:14px 2px 8px}
+.refresh-note{color:var(--muted);font-size:12px;margin:0 2px 12px;line-height:1.6}
+.auto-chk{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);white-space:nowrap}
+.auto-chk input{accent-color:var(--blue)}
 .list{display:grid;gap:10px}
 .item{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:14px 16px;display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:start}
 .item:hover{border-color:#c9d6f5;box-shadow:0 3px 14px rgba(47,95,224,.06)}
@@ -961,11 +964,14 @@ footer{margin-top:30px;color:var(--muted);font-size:12px;border-top:1px solid va
     </select>
     <button id="reset">重置</button>
     <button class="primary" id="export">导出 CSV</button>
+    <button id="refresh">⟳ 刷新数据</button>
+    <label class="auto-chk"><input type="checkbox" id="autoRefresh" checked> 自动检测</label>
   </div>
   <div class="chips" id="topicChips"></div>
 </div>
 
 <div class="count" id="count"></div>
+<div class="refresh-note" id="refreshNote"></div>
 <div class="list" id="list"></div>
 
 <div class="sec-title">持续抓取入口</div>
@@ -1031,7 +1037,8 @@ document.getElementById('howto').innerHTML = [
   '<b>⑧ 报道形态</b>：「全部形态」下拉的所有选项由当前数据动态生成，每次重建看板都会同步刷新。精选样本保留人工标注；实时抓取稿按标题关键词自动归入评论 / 舆论监督 / 深度调查 / 通报回应 / 个案维权 / 政策服务，无命中的落到「栏目更新」兜底（多为暖闻、校园活动、健康科普等）。规则表在 <code>scripts/collect_news.py</code> 的 <code>FORM_RULES</code>，可直接增删关键词。',
   '<b>⑨ 社会民生聚焦</b>：默认只显示强相关的<b>事件报道</b>，过滤政务通知、政策发布、会议部署、机构宣传与表彰、时政要闻，以及暖闻、校园趣闻、健康科普等软内容。判定分四级：<code>FOCUS_HARD</code> 命中即排除；<code>FOCUS_SOFT</code> 命中但标题里没有任何具体人物（<code>FOCUS_PEOPLE</code>）才排除，避免误删人物报道；<code>FOCUS_FLUFF</code> 剔除软内容；<code>FOCUS_KEEP</code> 是「栏目更新」兜底稿的正向白名单，无具体人物 / 事件 / 结构性问题的资讯稿一律不要。抓取阶段即用此标准准入，避免宽泛标签词表把噪声带进数据文件。被过滤稿仍完整保存在 news_data.json，用 <code>--focus 0</code> 可查看全量；四个词表可直接增删关键词。',
   '<b>⑩ 社会问题标签</b>：标签分两层：7 个按<b>报道折射出的社会问题</b>命名（公共资源与供需 / 制度落地困境 / 灰色产业链 / 权益侵害与维权 / 公共安全与问责 / 弱势群体与保障 / 基层治理与公平），另加 2 个<b>视角</b>标签：「民间疾苦」标记普通人遭遇的生存困境（欠薪、因病致贫、低保、失能、寻人、摆摊生计等），「社会矛盾」标记劳资、分配公平、基层权力、医患 / 消费 / 平台纠纷、群体性对立等冲突性事件，可一键筛出这两类稿，<b>不以题材命名</b>——「血」只是识别线索，不是标签。《救命血，为何一血难求？》因此同时归入「公共资源与供需」「制度落地困境」「灰色产业链」，与所有折射同类问题的报道一起被筛出。精选样本与实时抓取稿按同一套规则打标，原始细标签保留在 <code>tags_raw</code>。',
-  '<b>⑪ 发布日期</b>：显示的是稿件<b>真实发布日期</b>，不是抓取当天。澎湃栏目页 JSON-LD 的 <code>datePublished</code>、上游 URL 自带日期、九派微博时间、封面 / 界面 / 新京报的「N天前」「MM-DD」均已解析；页面确实未给日期的按 URL 沿用<b>首次抓取日</b>，重复运行不会把旧稿日期滚动到今天。每条带 <code>date_source</code>（published / first_seen / fetch_day）可追溯。'
+  '<b>⑪ 发布日期</b>：显示的是稿件<b>真实发布日期</b>，不是抓取当天。澎湃栏目页 JSON-LD 的 <code>datePublished</code>、上游 URL 自带日期、九派微博时间、封面 / 界面 / 新京报的「N天前」「MM-DD」均已解析；页面确实未给日期的按 URL 沿用<b>首次抓取日</b>，重复运行不会把旧稿日期滚动到今天。每条带 <code>date_source</code>（published / first_seen / fetch_day）可追溯。',
+  '<b>⑫ 即时刷新</b>：工具栏「⟳ 刷新数据」可立即比对服务端 HTML 里内嵌的数据快照；打开「自动检测」后每 30 秒检查一次，后台运行 <code>collect_news.py</code> 重建看板，页面会<b>自动发现并重载</b>，无需手动 F5。看板是单文件离线网页，<b>前端无法触发采集</b>——要拿新新闻仍需先跑一次脚本。以 <code>file://</code> 直接打开时 fetch 受限，按钮退化为直接重载页面，状态栏会提示。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -1099,6 +1106,49 @@ document.getElementById('export').onclick=()=>{
 };
 document.getElementById('reset').onclick=()=>{document.getElementById('q').value='';document.getElementById('fType').value='';fForm.value='';document.getElementById('fBucket').value='';document.getElementById('fSort').value='time_desc';document.querySelectorAll('.chip.on').forEach(x=>x.classList.remove('on'));render();};
 ['q','fType','fForm','fBucket','fSort'].forEach(id=>{const el=document.getElementById(id);el.addEventListener(id==='q'?'input':'change',render);});
+// 即时刷新：定时比对服务端 HTML 内嵌的数据快照，脚本重建看板后自动重载
+const payloadEl=document.getElementById('payload');
+const CURRENT_PAYLOAD=payloadEl.textContent;
+const noteEl=document.getElementById('refreshNote');
+const autoBox=document.getElementById('autoRefresh');
+let autoOn=true,lastCheck='—',busy=false;
+try{const v=localStorage.getItem('newsAutoRefresh');if(v!==null)autoOn=(v==='1');}catch(e){}
+autoBox.checked=autoOn;
+autoBox.addEventListener('change',()=>{
+  autoOn=autoBox.checked;
+  try{localStorage.setItem('newsAutoRefresh',autoOn?'1':'0');}catch(e){}
+  renderNote();
+});
+function renderNote(msg){
+  noteEl.textContent='数据快照 '+(D.updated||'—')+' ｜ 自动检测 '+(autoOn?'开（每 30 秒）':'关')+' ｜ 最近检查 '+lastCheck+(msg?' ｜ '+msg:'');
+}
+async function checkUpdate(manual){
+  if(busy)return;
+  busy=true;
+  lastCheck=new Date().toLocaleTimeString('zh-CN',{hour12:false});
+  let msg='';
+  try{
+    let res=await fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'});
+    if(!res.ok)res=await fetch(location.pathname,{cache:'no-store'});
+    const txt=await res.text();
+    const m=txt.match(/<script id="payload" type="application\/json">([\s\S]*?)<\/script>/);
+    if(!m){msg='未读到数据快照';}
+    else if(m[1]!==CURRENT_PAYLOAD){
+      noteEl.textContent='发现新数据，正在刷新…';
+      location.reload();
+      return;
+    }else{msg=manual?'已是最新':'';}
+  }catch(e){
+    msg=manual?'本地文件模式，重载页面':'本地文件模式（fetch 受限）';
+    if(manual){location.reload();return;}
+  }
+  busy=false;
+  renderNote(msg);
+}
+document.getElementById('refresh').onclick=()=>checkUpdate(true);
+renderNote();
+setInterval(()=>{if(autoOn&&!document.hidden)checkUpdate(false);},30000);
+
 stats();render();
 </script>
 </body>
