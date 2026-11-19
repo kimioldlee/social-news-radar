@@ -206,6 +206,14 @@ FOCUS_FLUFF = (
     "怕辐射", "拖到肺癌", "呈年轻化",
     "误食后如何急救", "引发中毒", "打把小伞", "堵住心脏漏洞",
     "频繁头晕", "泰康医疗",
+    # 11-19 新抓到的暖闻 / 机构宣传 / 校园软闻 / 健康奇观 / 萌宠趣闻
+    "合力救援", "公益活动", "心系骑手", "小针刀", "中医针刀",
+    "俱乐部改革", "一站式学生社区", "中文说唱", "文化桥", "知翰奖",
+    "十佳优秀教师", "数理知识改造校园", "胃石", "吃柿子",
+    "被当成流浪猫", "做了绝育",
+    "穿袜子睡觉", "入睡快", "多睡32分钟", "医生建议最近",
+    "分期晶体植入", "摘镜难", "双眼度数相差", "育人阵地",
+    "搬进宿舍楼", "五育组合拳",
 )
 
 # 「栏目更新」兜底稿的正向准入特征：没有具体人物、事件或结构性问题的稿一律不要
@@ -1150,7 +1158,9 @@ def main():
     cutoff = window_cutoff()
     before = len(data.get("curated", [])) + len(data.get("crawled", []))
     if cutoff:
-        data["curated"] = [x for x in data.get("curated", []) if within_window(x, cutoff)]
+        # 精选样本是人工核过的参照库：只由 all_items() 在时间窗内决定是否展示，
+        # 不从数据文件物理删除（否则窗口每天前移会把样本库逐渐清空）。
+        # 实时抓取稿属于新闻流，过期即物理剔除。
         data["crawled"] = [x for x in data.get("crawled", []) if within_window(x, cutoff)]
     dropped = before - len(data["curated"]) - len(data["crawled"])
     data["window"] = {
