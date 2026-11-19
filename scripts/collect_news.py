@@ -235,6 +235,7 @@ FOCUS_KEEP = (
     "违规宣传", "罚款", "伪造",
 )
 FOCUS_ENABLED = True
+FRESH_MODE = False  # --fresh 时丢弃历史 crawled，仅保留本次抓取结果
 
 
 def is_social_focus(x):
@@ -740,7 +741,9 @@ def dedup_items(items, threshold):
                 for x in others
             ][:6]
             tail = "同题另有 {} 家媒体报道：{}".format(len(others), "、".join(medias[:5]))
-            main["note"] = (main.get("note", "") + "｜" + tail).strip("｜")
+            # 累积历史后主稿可能已带旧的同题说明，先剥掉再追加，避免重复堆叠
+            base_note = re.sub(r"｜同题另有 \d+ 家媒体报道：.*$", "", main.get("note", "") or "")
+            main["note"] = (base_note + "｜" + tail).strip("｜")
         kept.append(main)
         removed += len(others)
     return kept, removed
@@ -795,6 +798,23 @@ def crawl(data, days, max_per_source):
         if len(kept) != len(out):
             print("   时间窗过滤：剔除 {} 条早于 {} 的稿件".format(len(out) - len(kept), wcut))
         out = kept
+    # 累积历史：新抓取稿与已有 crawled 按 URL 合并（新稿覆盖同 URL 旧稿），
+    # 不再整批覆盖丢失。这样每天跑一次，近一个月内各日期都会逐步留存，
+    # 日期筛选才有实际可选范围。过期稿仍由时间窗清理。
+    if not FRESH_MODE:
+        by_url = {}
+        for x in data.get("crawled", []):
+            y = dict(x)
+            for k in ("dup_count", "dup_media", "dup_urls"):
+                y.pop(k, None)
+            if y.get("url"):
+                by_url[y["url"]] = y
+        for x in out:
+            by_url[x["url"]] = x
+        merged = [x for x in by_url.values() if within_window(x, wcut)] if wcut else list(by_url.values())
+        print("   历史累积：{} 条（本次抓取 {} 条，沿用 {} 条）".format(
+            len(merged), len(out), len(merged) - len(out)))
+        out = merged
     return out
 
 
@@ -1048,7 +1068,8 @@ document.getElementById('howto').innerHTML = [
   '<b>⑩ 社会问题标签</b>：标签分两层：7 个按<b>报道折射出的社会问题</b>命名（公共资源与供需 / 制度落地困境 / 灰色产业链 / 权益侵害与维权 / 公共安全与问责 / 弱势群体与保障 / 基层治理与公平），另加 2 个<b>视角</b>标签：「民间疾苦」标记普通人遭遇的生存困境（欠薪、因病致贫、低保、失能、寻人、摆摊生计等），「社会矛盾」标记劳资、分配公平、基层权力、医患 / 消费 / 平台纠纷、群体性对立等冲突性事件，可一键筛出这两类稿，<b>不以题材命名</b>——「血」只是识别线索，不是标签。《救命血，为何一血难求？》因此同时归入「公共资源与供需」「制度落地困境」「灰色产业链」，与所有折射同类问题的报道一起被筛出。精选样本与实时抓取稿按同一套规则打标，原始细标签保留在 <code>tags_raw</code>。',
   '<b>⑪ 发布日期</b>：显示的是稿件<b>真实发布日期</b>，不是抓取当天。澎湃栏目页 JSON-LD 的 <code>datePublished</code>、上游 URL 自带日期、九派微博时间、封面 / 界面 / 新京报的「N天前」「MM-DD」均已解析；页面确实未给日期的按 URL 沿用<b>首次抓取日</b>，重复运行不会把旧稿日期滚动到今天。每条带 <code>date_source</code>（published / first_seen / fetch_day）可追溯。',
   '<b>⑫ 即时刷新</b>：工具栏「⟳ 刷新数据」可立即比对服务端 HTML 里内嵌的数据快照；打开「自动检测」后每 30 秒检查一次，后台运行 <code>collect_news.py</code> 重建看板，页面会<b>自动发现并重载</b>，无需手动 F5。看板是单文件离线网页，<b>前端无法触发采集</b>——要拿新新闻仍需先跑一次脚本。以 <code>file://</code> 直接打开时 fetch 受限，按钮退化为直接重载页面，状态栏会提示。',
-  '<b>⑬ 日期筛选</b>：工具栏日期下拉默认「<b>近 30 天（一个月）</b>」，可切近 7 天 / 近 90 天 / 全部日期 / 自定义起止范围。以<b>数据快照日</b>（<code>D.updated</code>）为基准，例如快照 2026-11-19 时近 30 天即 2026-10-20 起；计数栏会显示当前范围与基准日。筛选同时作用于列表与导出的 CSV，重置按钮回到近 30 天。要看更早的新闻，需先用 <code>--window 0</code> 重新生成数据，页面才有可选条目。'
+  '<b>⑬ 日期筛选</b>：工具栏日期下拉默认「<b>近 30 天（一个月）</b>」，可切近 7 天 / 近 90 天 / 全部日期 / 自定义起止范围。以<b>数据快照日</b>（<code>D.updated</code>）为基准，例如快照 2026-11-19 时近 30 天即 2026-10-20 起；计数栏会显示当前范围与基准日。筛选同时作用于列表与导出的 CSV，重置按钮回到近 30 天。要看更早的新闻，需先用 <code>--window 0</code> 重新生成数据，页面才有可选条目。',
+  '<b>⑭ 历史累积</b>：每次抓取会与已有稿件按 URL 合并留存（同 URL 用新稿覆盖），不再整批覆盖，近一个月内各日期会随每日运行逐步补齐；过期稿仍由时间窗清理。需要「只看本次抓取」时用 <code>--fresh</code>。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -1235,7 +1256,7 @@ KEYWORDS = {}
 
 
 def main():
-    global KEYWORDS, WINDOW_DAYS, DEDUP_THRESHOLD, FOCUS_ENABLED
+    global KEYWORDS, WINDOW_DAYS, DEDUP_THRESHOLD, FOCUS_ENABLED, FRESH_MODE
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-fetch", action="store_true", help="跳过采集，只重建看板与 CSV")
     ap.add_argument("--days", type=int, default=30,
@@ -1245,6 +1266,8 @@ def main():
                     help="同题去重相似度阈值，0 表示关闭（默认 0.48）")
     ap.add_argument("--focus", type=int, default=None,
                     help="1 只保留社会民生强相关事件报道，0 显示全部（默认 1）")
+    ap.add_argument("--fresh", action="store_true",
+                    help="丢弃历史 crawled，只用本次抓取结果（默认累积留存近 30 天稿件）")
     ap.add_argument("--max-per-source", type=int, default=20, help="每个源最多保留条数")
     ap.add_argument("--out", default=os.getcwd(), help="输出目录，默认当前工作目录")
     ap.add_argument("--init", action="store_true", help="用模板重新初始化数据文件（覆盖已有数据）")
@@ -1252,6 +1275,7 @@ def main():
     WINDOW_DAYS = args.window
     DEDUP_THRESHOLD = args.dedup
     FOCUS_ENABLED = True if args.focus is None else bool(args.focus)
+    FRESH_MODE = args.fresh
 
     configure_output(args.out)
     if args.init or not os.path.exists(DATA_FILE):
