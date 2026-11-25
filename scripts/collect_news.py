@@ -1293,6 +1293,12 @@ function stats(){
   const platform=items.filter(x=>x.media_level==='国家许可平台').length;
   const deep=items.filter(x=>['深度调查','舆论监督'].includes(x.form)).length;
   const media=new Set(items.map(x=>x.media)).size;
+  const srcs=(D.sources||[]).filter(s=>s.enabled);
+  const srcMedia=new Set(srcs.map(s=>s.media).filter(Boolean)).size;
+  const mp=D.media_policy||{};
+  const wl=(mp.central_website_count||0)+(mp.other_platform_count||0);
+  const provCount=(D.provincial_registries||{}).count||0;
+  const srcInfo='接入 '+srcs.length+' 个栏目源 / '+srcMedia+' 家媒体 · 稿件署名 '+media+' 个（含联合署名） · 名单白名单 '+wl+' 家网站（中央 '+(mp.central_website_count||0)+' + 其他单位 '+(mp.other_platform_count||0)+'） · 省级名单入口 '+provCount+' 个';
   const d=[['稿件总数',n],['中央级稿件',central],['省级 / 地市级 / 其他稿件',local],['深度调查 · 舆论监督',deep]];
   const ds=items.map(x=>x.date).filter(Boolean).sort();
   const span=ds.length?(ds[0]+' 至 '+ds[ds.length-1]):'—';
@@ -1302,7 +1308,7 @@ function stats(){
   const fc=(D.focus&&D.focus.enabled)?' · 社会民生聚焦过滤 '+D.focus.excluded+' 条政务/宣传稿':'';
   const ml=(D.media_policy&&D.media_policy.filter_county_level)?' · 中央级稿件来自 '+centralMedia+' 个署名媒体 · 国家许可平台稿件 '+platform+' 条 · 媒体级别依据网信办许可名单（中央 193 家 + 其他单位 27 家），区县级融媒默认过滤（当前 '+county+' 条）':'';
   document.getElementById('stats').innerHTML=d.map(x=>'<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')
-    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条'+esc(ded)+esc(fm)+esc(fc)+esc(ml)+'</span></div>';
+    +'<div class="stat" style="grid-column:1/-1"><span>'+esc(srcInfo)+' · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条'+esc(ded)+esc(fm)+esc(fc)+esc(ml)+'</span></div>';
 }
 document.getElementById('export').onclick=()=>{
   const arr=filtered();
