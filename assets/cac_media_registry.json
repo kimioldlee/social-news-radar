@@ -5,7 +5,7 @@
  "as_of": "2026-09-30",
  "scope": "中央互联网新闻信息服务单位—互联网站",
  "count": 193,
- "note": "国家网信办许可的中央级互联网站名单，作为媒体查询范围与级别判定的权威依据；区县级媒体不在本名单内，由 media_policy 规则过滤",
+ "note": "国家网信办许可的中央级互联网站名单，作为媒体查询范围与级别判定的权威依据；区县级媒体不在本名单内，由 media_policy 规则过滤；另纳入「其他互联网新闻信息服务单位—互联网站」27 家（见 other_websites）",
  "central_websites": [
   {
    "seq": 1,
@@ -1576,5 +1576,330 @@
    ],
    "license": "10120260003"
   }
- ]
+ ],
+ "other_websites": {
+  "detail": "https://www.cac.gov.cn/2026-10/23/c_1794509574547526.htm",
+  "title": "其他互联网新闻信息服务单位—互联网站名单（共27个）",
+  "as_of": "2026-09-30",
+  "count": 27,
+  "note": "国家网信办直接许可、申请主体非中央新闻单位的互联网站；含属地、服务名称、域名、许可证编号。仅用于媒体名称判定，不按转载 URL 改判原发媒体级别",
+  "items": [
+   {
+    "seq": 1,
+    "region": "北京市",
+    "name": "新浪网",
+    "domains": [
+     "www.sina.com",
+     "www.sina.com.cn",
+     "www.sina.cn"
+    ],
+    "license": "11220180001"
+   },
+   {
+    "seq": 2,
+    "region": "北京市",
+    "name": "网易",
+    "domains": [
+     "www.163.com"
+    ],
+    "license": "11220180002"
+   },
+   {
+    "seq": 3,
+    "region": "北京市",
+    "name": "搜狐网",
+    "domains": [
+     "www.sohu.com"
+    ],
+    "license": "11220180003"
+   },
+   {
+    "seq": 4,
+    "region": "北京市",
+    "name": "焦点网",
+    "domains": [
+     "www.focus.cn"
+    ],
+    "license": "11220180003"
+   },
+   {
+    "seq": 5,
+    "region": "北京市",
+    "name": "百度",
+    "domains": [
+     "www.baidu.com"
+    ],
+    "license": "11220180008"
+   },
+   {
+    "seq": 6,
+    "region": "北京市",
+    "name": "和讯网",
+    "domains": [
+     "www.hexun.com"
+    ],
+    "license": "11220180005"
+   },
+   {
+    "seq": 7,
+    "region": "北京市",
+    "name": "天天在线",
+    "domains": [
+     "www.116.com.cn"
+    ],
+    "license": "11220180007"
+   },
+   {
+    "seq": 8,
+    "region": "北京市",
+    "name": "第一视频",
+    "domains": [
+     "www.vodone.com",
+     "www.v1tv.com",
+     "www.v1tv.cn",
+     "www.v1.cn"
+    ],
+    "license": "11220180006"
+   },
+   {
+    "seq": 9,
+    "region": "北京市",
+    "name": "一点资讯",
+    "domains": [
+     "www.yidianzixun.com"
+    ],
+    "license": "11220170010"
+   },
+   {
+    "seq": 10,
+    "region": "上海市",
+    "name": "上海热线",
+    "domains": [
+     "www.online.sh.cn"
+    ],
+    "license": "31220180001"
+   },
+   {
+    "seq": 11,
+    "region": "上海市",
+    "name": "观察者网",
+    "domains": [
+     "www.guancha.cn"
+    ],
+    "license": "31220170001"
+   },
+   {
+    "seq": 12,
+    "region": "山东省",
+    "name": "百灵信息网",
+    "domains": [
+     "www.beelink.com",
+     "www.beelink.net",
+     "www.beelink.org",
+     "www.beelink.com.cn"
+    ],
+    "license": "37220170001"
+   },
+   {
+    "seq": 13,
+    "region": "广东省",
+    "name": "腾讯网",
+    "domains": [
+     "www.qq.com"
+    ],
+    "license": "44220180001"
+   },
+   {
+    "seq": 14,
+    "region": "四川省",
+    "name": "天府热线",
+    "domains": [
+     "www.tfol.net"
+    ],
+    "license": "51220180001"
+   },
+   {
+    "seq": 15,
+    "region": "北京市",
+    "name": "微博",
+    "domains": [
+     "www.weibo.com",
+     "www.weibo.com.cn",
+     "www.weibo.cn"
+    ],
+    "license": "11220190001"
+   },
+   {
+    "seq": 16,
+    "region": "广东省",
+    "name": "ZAKER",
+    "domains": [
+     "www.myzaker.com",
+     "www.zaker.cn"
+    ],
+    "license": "44220190001"
+   },
+   {
+    "seq": 17,
+    "region": "上海市",
+    "name": "趣头条",
+    "domains": [
+     "www.qutoutiao.net"
+    ],
+    "license": "31220190001"
+   },
+   {
+    "seq": 18,
+    "region": "北京市",
+    "name": "今日头条",
+    "domains": [
+     "www.toutiao.com"
+    ],
+    "license": "11220190002"
+   },
+   {
+    "seq": 19,
+    "region": "上海市",
+    "name": "大智慧官网",
+    "domains": [
+     "www.dzh.com.cn"
+    ],
+    "license": "31220230001"
+   },
+   {
+    "seq": 20,
+    "region": "北京市",
+    "name": "抖音",
+    "domains": [
+     "www.douyin.com"
+    ],
+    "license": "11220230001"
+   },
+   {
+    "seq": 21,
+    "region": "北京市",
+    "name": "快手",
+    "domains": [
+     "www.kuaishou.com"
+    ],
+    "license": "11220240001"
+   },
+   {
+    "seq": 22,
+    "region": "天津市",
+    "name": "360搜索",
+    "domains": [
+     "www.so.com"
+    ],
+    "license": "12220240001"
+   },
+   {
+    "seq": 23,
+    "region": "天津市",
+    "name": "快资讯",
+    "domains": [
+     "www.360kuai.com"
+    ],
+    "license": "12220240001"
+   },
+   {
+    "seq": 24,
+    "region": "天津市",
+    "name": "360导航",
+    "domains": [
+     "hao.360.com"
+    ],
+    "license": "12220240001"
+   },
+   {
+    "seq": 25,
+    "region": "北京市",
+    "name": "知乎",
+    "domains": [
+     "www.zhihu.com"
+    ],
+    "license": "11220250001"
+   },
+   {
+    "seq": 26,
+    "region": "上海市",
+    "name": "喜马拉雅",
+    "domains": [
+     "www.ximalaya.com"
+    ],
+    "license": "31220250001"
+   },
+   {
+    "seq": 27,
+    "region": "福建省",
+    "name": "华人头条",
+    "domains": [
+     "www.52hrtt.com"
+    ],
+    "license": "35220260001"
+   }
+  ]
+ },
+ "state_licensed_service_forms": {
+  "note": "国家网信办许可信息下各类服务形式的名单查看链接（中央单位 / 其他单位）；本轮只解析了两份互联网站名单",
+  "links": [
+   {
+    "form": "互联网站",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509036630583.htm"
+   },
+   {
+    "form": "应用程序",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509036701112.htm"
+   },
+   {
+    "form": "论坛",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509036740411.htm"
+   },
+   {
+    "form": "公众账号",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509036777826.htm"
+   },
+   {
+    "form": "网络直播",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509036816035.htm"
+   },
+   {
+    "form": "其他",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509036855049.htm"
+   },
+   {
+    "form": "互联网站",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509574547526.htm"
+   },
+   {
+    "form": "应用程序",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509574543766.htm"
+   },
+   {
+    "form": "论坛",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509574541318.htm"
+   },
+   {
+    "form": "博客",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509574537406.htm"
+   },
+   {
+    "form": "微博客",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509574535011.htm"
+   },
+   {
+    "form": "公众账号",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509574531686.htm"
+   },
+   {
+    "form": "网络直播",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509574524089.htm"
+   },
+   {
+    "form": "其他",
+    "url": "https://www.cac.gov.cn/2026-10/23/c_1794509574527752.htm"
+   }
+  ]
+ },
+ "count_other_websites": 27
 }
