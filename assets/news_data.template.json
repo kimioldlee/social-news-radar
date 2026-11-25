@@ -1270,5 +1270,238 @@
       "杂志"
     ],
     "note": "媒体查询范围以网信办许可名单为准；中央 193 家互联网站作为中央级判定依据；名称含区/县且带融媒、新闻网、广电等标记的区县级媒体默认过滤，可设 filter_county_level=false 关闭"
+  },
+  "provincial_registries": {
+    "source": "https://www.cac.gov.cn/2026-10/23/c_1794509036894710.htm",
+    "as_of": "2026-09-30",
+    "probed_at": "2026-11-25",
+    "note": "来源：中国网信网《互联网新闻信息服务单位许可信息》2026-10-23 索引页「二、各地网信办许可信息」；2026-11-25 轻量探测，仅记录状态/标题/附件数，未下载各省全文",
+    "count": 32,
+    "items": [
+      {
+        "name": "北京",
+        "url": "https://beijing.qianlong.com/2026/0930/8734256.shtml",
+        "status": "200",
+        "title": "北京市互联网新闻信息服务单位许可信息 （截至2026年9月30日）-千龙网·中国",
+        "attachments": "0"
+      },
+      {
+        "name": "天津",
+        "url": "https://www.tj.gov.cn/sy/tzgg/202610/t20261008_7387251.html",
+        "status": "200",
+        "title": "天津市互联网新闻信息服务单位许可信息_通知通告_天津政务网",
+        "attachments": "0"
+      },
+      {
+        "name": "河北",
+        "url": "http://www.caheb.gov.cn/system/2018/02/09/011717832.shtml",
+        "status": "200",
+        "title": "页面非 UTF-8 编码，标题请在浏览器内查看",
+        "attachments": "0"
+      },
+      {
+        "name": "山西",
+        "url": "http://www.casx.gov.cn/content/2021-12/20/content_10699740.htm",
+        "status": "200",
+        "title": "最新山西省互联网新闻信息服务单位许可信息_山西网信网",
+        "attachments": "1"
+      },
+      {
+        "name": "内蒙古",
+        "url": "http://www.nmgwx.gov.cn/publicNotice/19188.jhtml",
+        "status": "200",
+        "title": "内蒙古自治区互联网新闻信息服务单位许可信息（截止2026年9月4日）",
+        "attachments": "0"
+      },
+      {
+        "name": "辽宁",
+        "url": "https://gsgg.nen.com.cn/network/gsgg/qwfb/2026/09/30/959846860569187110.shtml",
+        "status": "200",
+        "title": "辽宁省互联网新闻信息服务单位许可信息-东北新闻网",
+        "attachments": "0"
+      },
+      {
+        "name": "吉林",
+        "url": "https://news.cnjiwang.com/ggl/202610/4088059.html",
+        "status": "200",
+        "title": "吉林省互联网新闻信息服务单位许可信息（截至2026年10月8日）-中国吉林网",
+        "attachments": "0"
+      },
+      {
+        "name": "黑龙江",
+        "url": "http://www.hljnews.cn/ljxw/content/2021-09/26/content_562986.html",
+        "status": "200",
+        "title": "黑龙江省互联网新闻信息服务单位许可信息（截至2026年11月6日）",
+        "attachments": "0"
+      },
+      {
+        "name": "上海",
+        "url": "https://mp.weixin.qq.com/s/rQjir_kwv96BZRke-q2oiA",
+        "status": "200",
+        "title": "微信公众号文章",
+        "attachments": "0"
+      },
+      {
+        "name": "江苏",
+        "url": "https://jsnews.jschina.com.cn/jsyw/202610/t20261015_s6ad03f05e4b0f38142697f71.shtml",
+        "status": "200",
+        "title": "江苏省互联网新闻信息服务单位许可信息公示_中国江苏网",
+        "attachments": "0"
+      },
+      {
+        "name": "浙江",
+        "url": "https://www.zjwx.gov.cn/col/col1228998798/art/2026/art_fbf22e487f2547bfa70409925b8703cc.html",
+        "status": "200",
+        "title": "浙江省互联网新闻信息服务单位许可信息（截至2026年9月30日）",
+        "attachments": "0"
+      },
+      {
+        "name": "安徽",
+        "url": "https://www.ahwx.gov.cn/gzzc/bbdt/202610/t20261010_9648845.html",
+        "status": "200",
+        "title": "安徽省互联网新闻信息服务单位许可信息（截至2026年9月30日） 安徽网信网",
+        "attachments": "0"
+      },
+      {
+        "name": "福建",
+        "url": "https://fjnews.fjsen.com/wap/2026-09/30/content_32261548.htm",
+        "status": "200",
+        "title": "福建省互联网新闻信息服务单位许可信息 - 社会 - 东南网",
+        "attachments": "0"
+      },
+      {
+        "name": "江西",
+        "url": "https://mp.weixin.qq.com/s/y3PsoyLEdSzRWMI7zoPHmg",
+        "status": "200",
+        "title": "微信公众号文章",
+        "attachments": "0"
+      },
+      {
+        "name": "山东",
+        "url": "https://sd.dzwww.com/sdnews/202610/t20261008_18182564.htm",
+        "status": "200",
+        "title": "山东省互联网新闻信息服务单位许可信息（截至2026年9月30日）_山东新闻_大众",
+        "attachments": "0"
+      },
+      {
+        "name": "河南",
+        "url": "https://www.hnwx.gov.cn/2026/10-19/80874.html",
+        "status": "200",
+        "title": "河南网信网",
+        "attachments": "0"
+      },
+      {
+        "name": "湖北",
+        "url": "http://news.cnhubei.com/content/2026-10/08/content_20226440.html",
+        "status": "200",
+        "title": "湖北省互联网新闻信息服务单位信息（截至2026年9月30日）-荆楚网-湖北日报网",
+        "attachments": "0"
+      },
+      {
+        "name": "湖南",
+        "url": "https://moment.rednet.cn/pc/content/646054/56/16360443.html",
+        "status": "200",
+        "title": "湖南省互联网新闻信息服务单位许可信息_时刻_红网",
+        "attachments": "0"
+      },
+      {
+        "name": "广东",
+        "url": "https://mp.weixin.qq.com/s/uH_T1RyKvvE6oPJwoQjiqA",
+        "status": "200",
+        "title": "微信公众号文章",
+        "attachments": "0"
+      },
+      {
+        "name": "广西",
+        "url": "https://mp.weixin.qq.com/s/Pi-eMsOOJDZT7f7X37DTCA",
+        "status": "200",
+        "title": "微信公众号文章",
+        "attachments": "0"
+      },
+      {
+        "name": "海南",
+        "url": "https://www.hainan.gov.cn/hainan/0101/202609/bb11fbbe5cd94471b19fc5da19ccab79.shtml",
+        "status": "ERR",
+        "title": "访问异常：URLError:<urlopen error [SSL: UNEXPECTED_",
+        "attachments": ""
+      },
+      {
+        "name": "重庆",
+        "url": "https://www.cqnews.net/web/content_1559610248834924544.html",
+        "status": "200",
+        "title": "重庆市互联网新闻信息服务单位许可信息-华龙网-重庆市委市政府官方新闻门户",
+        "attachments": "0"
+      },
+      {
+        "name": "四川",
+        "url": "https://sichuan.scol.com.cn/ggxw/202610/83336746.html",
+        "status": "200",
+        "title": "四川省互联网新闻信息服务单位许可信息（截至2026年9月30日）_四川在线",
+        "attachments": "0"
+      },
+      {
+        "name": "贵州",
+        "url": "https://movement.gzstv.com/news/detail/HRyXly/?st=ZGR4XWOCPM0s4kQMY",
+        "status": "200",
+        "title": "贵州省互联网新闻信息服务单位许可信息（截至2026年9月30日）",
+        "attachments": "0"
+      },
+      {
+        "name": "云南",
+        "url": "https://mp.weixin.qq.com/s/FR-ajB-Qm2hZNzGqIUREig",
+        "status": "200",
+        "title": "微信公众号文章",
+        "attachments": "0"
+      },
+      {
+        "name": "西藏",
+        "url": "https://mp.weixin.qq.com/s/HuY_op9A3lBDFwR_hm06oQ",
+        "status": "200",
+        "title": "微信公众号文章",
+        "attachments": "0"
+      },
+      {
+        "name": "陕西",
+        "url": "https://app.sxdaily.com.cn/sxrbs/site1/mweb/jaa4o/content_20156016.html",
+        "status": "200",
+        "title": "陕西省互联网新闻信息服务单位许可信息",
+        "attachments": "0"
+      },
+      {
+        "name": "甘肃",
+        "url": "http://gansu.gscn.com.cn/system/2026/04/13/013484231.shtml",
+        "status": "200",
+        "title": "甘肃省互联网新闻信息服务单位许可信息（截至2026年9月30日）_公告提示_中国",
+        "attachments": "4"
+      },
+      {
+        "name": "青海",
+        "url": "https://www.qhcac.gov.cn/hdhlwxw/hdxxxkgs/query/202610141030358965.html",
+        "status": "200",
+        "title": "青海省互联网信息办公室",
+        "attachments": "0"
+      },
+      {
+        "name": "宁夏",
+        "url": "https://www.nxnews.net/sz/qwfb/202609/t20260930_1609129.html",
+        "status": "ERR",
+        "title": "访问异常：HTTPError:HTTP Error 412: Precondition Fai",
+        "attachments": ""
+      },
+      {
+        "name": "新疆",
+        "url": "https://www.xinjiang.gov.cn/xinjiang/tzgg/202607/df4546eb75cd4fd4883644c4c6e6f52e.shtml",
+        "status": "200",
+        "title": "新疆维吾尔自治区互联网新闻信息服务许可信息_通知公告_新疆维吾尔自治区人民政府网",
+        "attachments": "0"
+      },
+      {
+        "name": "新疆生产建设兵团",
+        "url": "https://www.xjbt.gov.cn/c/2026-09-24/8506223.shtml",
+        "status": "200",
+        "title": "新疆生产建设兵团--通知公告--新疆生产建设兵团互联网新闻信息服务单位许可信息",
+        "attachments": "0"
+      }
+    ]
   }
 }

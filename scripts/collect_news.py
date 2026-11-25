@@ -1017,6 +1017,9 @@ button.primary:hover{opacity:.9;color:#fff}
 .links{display:flex;flex-wrap:wrap;gap:7px}
 .links a{font-size:12px;color:var(--text);text-decoration:none;background:#fafbfe;border:1px solid var(--line);border-radius:7px;padding:5px 10px}
 .links a:hover{color:var(--blue);border-color:#b9ccff}
+.prov-panel summary{cursor:pointer;font-weight:600;font-size:14px}
+.prov-panel .links a.warn{border-color:#f0c9a0;color:#b06a2c}
+.prov-panel .links a.wx{background:#f7f7f9}
 .kwgroup{margin-bottom:10px}
 .kwgroup b{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;font-weight:600}
 .kw{font-size:12px;background:#fafbfe;border:1px solid var(--line);border-radius:6px;padding:3px 8px;margin:0 5px 5px 0;display:inline-block;cursor:pointer}
@@ -1075,6 +1078,12 @@ footer{margin-top:30px;color:var(--muted);font-size:12px;border-top:1px solid va
 <div class="sec-title">持续抓取入口</div>
 <div class="panel"><div class="grid2" id="channels"></div></div>
 
+<details class="panel prov-panel" id="provPanel">
+  <summary>📋 网信办省级媒体许可名单 <span id="provSummary" style="font-size:12px;font-weight:400;color:var(--muted)"></span></summary>
+  <div class="links" id="provLinks" style="margin-top:12px"></div>
+  <div class="desc" id="provNote" style="margin-top:10px"></div>
+</details>
+
 <div class="sec-title">民生痛点关键词表 <span style="font-size:12px;font-weight:400;color:var(--muted)">（点击填入搜索框）</span></div>
 <div class="panel" id="keywords"></div>
 
@@ -1124,6 +1133,27 @@ const chBox=document.getElementById('channels');
   d.appendChild(box);chBox.appendChild(d);
 });
 
+// 网信办省级媒体许可名单：点击展开，逐个跳转到各省网信办公示页
+const provData=D.provincial_registries||{};
+const provItems=provData.items||[];
+const provBox=document.getElementById('provLinks');
+const provOk=provItems.filter(p=>p.status==='200').length;
+document.getElementById('provSummary').textContent='（点击展开，'+provItems.length+' 个入口 · '+provOk+' 个可打开 · 状态见悬停提示）';
+provItems.forEach(p=>{
+  const a=document.createElement('a');
+  a.href=p.url;a.target='_blank';a.rel='noopener';
+  let label=p.name;
+  if(p.status!=='200'){a.className='warn';label+=' ⚠';}
+  else if(/mp\.weixin\.qq\.com/.test(p.url)){a.className='wx';label+=' ·微信';}
+  a.textContent=label;
+  const bits=[p.title||''];
+  if(p.status!=='200')bits.push('探测异常 '+p.status);
+  if(p.attachments&&p.attachments!=='0')bits.push('附件 '+p.attachments+' 个');
+  a.title=bits.filter(Boolean).join(' ｜ ');
+  provBox.appendChild(a);
+});
+document.getElementById('provNote').textContent=provData.note||'';
+
 document.getElementById('howto').innerHTML = [
   '<b>① 内容链路</b>：官媒原发深度稿（央视网《救命血，为何一血难求？》）→ 平台号/融媒体同步（澎湃号·媒体）→ 多家融媒跟进通报与个案。找同类稿要同时盯「原发」和「转载」两端。',
   '<b>② 最高性价比入口</b>：中国记协「我的代表作」每周一更新，集中收录央媒与地方融媒的深度报道、舆论监督稿；澎湃站内搜索 <code>searchResult?id=关键词</code> 的每条结果都标注所属栏目，可反查栏目。',
@@ -1139,7 +1169,8 @@ document.getElementById('howto').innerHTML = [
   '<b>⑫ 即时刷新</b>：工具栏「⟳ 刷新数据」可立即比对服务端 HTML 里内嵌的数据快照；打开「自动检测」后每 30 秒检查一次，后台运行 <code>collect_news.py</code> 重建看板，页面会<b>自动发现并重载</b>，无需手动 F5。看板是单文件离线网页，<b>前端无法触发采集</b>——要拿新新闻仍需先跑一次脚本。以 <code>file://</code> 直接打开时 fetch 受限，按钮退化为直接重载页面，状态栏会提示。',
   '<b>⑬ 日期筛选</b>：工具栏日期下拉默认「<b>近 30 天（一个月）</b>」，可切近 7 天 / 近 90 天 / 全部日期 / 自定义起止范围。以<b>数据快照日</b>（<code>D.updated</code>）为基准，例如快照 2026-11-19 时近 30 天即 2026-10-20 起；计数栏会显示当前范围与基准日。筛选同时作用于列表与导出的 CSV，重置按钮回到近 30 天。要看更早的新闻，需先用 <code>--window 0</code> 重新生成数据，页面才有可选条目。',
   '<b>⑭ 历史累积</b>：每次抓取会与已有稿件按 URL 合并留存（同 URL 用新稿覆盖），不再整批覆盖，近一个月内各日期会随每日运行逐步补齐；过期稿仍由时间窗清理。需要「只看本次抓取」时用 <code>--fresh</code>。',
-  '<b>⑮ 媒体查询范围</b>：以中国网信网《互联网新闻信息服务单位许可信息》（2026-10-23，截至 2026-09-30 共 3657 家单位）为参考，其中「中央互联网新闻信息服务单位—互联网站」193 家名单已解析为 <code>assets/cac_media_registry.json</code>，作为<b>中央级</b>判定依据。每条稿件按中央 / 省级 / 地市级 / 区县级 / 其他标注级别，卡片显示级别标签；名称含区、县且带融媒体中心、新闻网、广电等标记的<b>区县级媒体默认过滤</b>，可用工具栏「媒体」下拉切换为全部或仅中央/省级，或在 <code>news_data.json</code> 的 <code>media_policy.filter_county_level</code> 关闭。'
+  '<b>⑮ 媒体查询范围</b>：以中国网信网《互联网新闻信息服务单位许可信息》（2026-10-23，截至 2026-09-30 共 3657 家单位）为参考，其中「中央互联网新闻信息服务单位—互联网站」193 家名单已解析为 <code>assets/cac_media_registry.json</code>，作为<b>中央级</b>判定依据。每条稿件按中央 / 省级 / 地市级 / 区县级 / 其他标注级别，卡片显示级别标签；名称含区、县且带融媒体中心、新闻网、广电等标记的<b>区县级媒体默认过滤</b>，可用工具栏「媒体」下拉切换为全部或仅中央/省级，或在 <code>news_data.json</code> 的 <code>media_policy.filter_county_level</code> 关闭。',
+  '<b>⑯ 省级名单入口</b>：「持续抓取入口」下方的「📋 网信办省级媒体许可名单」是可折叠面板，点击展开后逐个跳转到 31 省 + 新疆生产建设兵团共 <b>32 个</b>公示页（2026-11-25 轻量探测：30 个返回 200，海南 SSL 异常、宁夏 HTTP 412；6 个为微信公众号文章，山西与甘肃页面带附件）。这些页面只用于人工查阅媒体范围，<b>不自动抓取、不下载全文</b>，也不替代中央 193 家白名单。悬停可看页面标题与附件数，橙色边框表示探测异常。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
