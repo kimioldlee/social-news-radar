@@ -1,0 +1,1580 @@
+{
+ "source": "https://www.cac.gov.cn/2026-10/23/c_1794509036894710.htm",
+ "detail": "https://www.cac.gov.cn/2026-10/23/c_1794509036630583.htm",
+ "title": "互联网新闻信息服务单位许可信息（2026-10-23）",
+ "as_of": "2026-09-30",
+ "scope": "中央互联网新闻信息服务单位—互联网站",
+ "count": 193,
+ "note": "国家网信办许可的中央级互联网站名单，作为媒体查询范围与级别判定的权威依据；区县级媒体不在本名单内，由 media_policy 规则过滤",
+ "central_websites": [
+  {
+   "seq": 1,
+   "name": "人民网",
+   "domains": [
+    "www.people.com.cn"
+   ],
+   "license": "10120170001"
+  },
+  {
+   "seq": 2,
+   "name": "人民雄安网",
+   "domains": [
+    "www.rmxiongan.com"
+   ],
+   "license": "10120170001"
+  },
+  {
+   "seq": 3,
+   "name": "人民日报少年网",
+   "domains": [
+    "www.rmrbsn.cn"
+   ],
+   "license": "10120170001"
+  },
+  {
+   "seq": 4,
+   "name": "新华网",
+   "domains": [
+    "www.xinhuanet.com",
+    "www.news.cn",
+    "www.xinhua.org"
+   ],
+   "license": "10120170002"
+  },
+  {
+   "seq": 5,
+   "name": "央视网",
+   "domains": [
+    "www.cntv.cn"
+   ],
+   "license": "10120170003"
+  },
+  {
+   "seq": 6,
+   "name": "中国网",
+   "domains": [
+    "www.china.com.cn",
+    "www.china.org.cn"
+   ],
+   "license": "10120170004"
+  },
+  {
+   "seq": 7,
+   "name": "国际在线",
+   "domains": [
+    "www.guojizaixian.cn",
+    "www.crionline.org.cn",
+    "www.crionline.net.cn"
+   ],
+   "license": "10120170005"
+  },
+  {
+   "seq": 8,
+   "name": "中国日报网",
+   "domains": [
+    "www.chinadaily.com.cn"
+   ],
+   "license": "10120170006"
+  },
+  {
+   "seq": 9,
+   "name": "中国青年网",
+   "domains": [
+    "www.youth.cn"
+   ],
+   "license": "10120170007"
+  },
+  {
+   "seq": 10,
+   "name": "中国经济网",
+   "domains": [
+    "www.ce.cn"
+   ],
+   "license": "10120170008"
+  },
+  {
+   "seq": 11,
+   "name": "中国台湾网",
+   "domains": [
+    "www.taiwan.cn"
+   ],
+   "license": "10120170009"
+  },
+  {
+   "seq": 12,
+   "name": "中国西藏网",
+   "domains": [
+    "www.tibet.cn"
+   ],
+   "license": "10120170010"
+  },
+  {
+   "seq": 13,
+   "name": "光明网",
+   "domains": [
+    "www.gmw.cn"
+   ],
+   "license": "10120170011"
+  },
+  {
+   "seq": 14,
+   "name": "云听",
+   "domains": [
+    "www.radio.cn"
+   ],
+   "license": "10120170012"
+  },
+  {
+   "seq": 15,
+   "name": "中国军网",
+   "domains": [
+    "www.81.cn",
+    "www.chinamil.com.cn",
+    "www.jfjb.com.cn",
+    "www.pladaily.com.cn"
+   ],
+   "license": "10120170013"
+  },
+  {
+   "seq": 16,
+   "name": "国防部网",
+   "domains": [
+    "www.mod.gov.cn"
+   ],
+   "license": "10120170013"
+  },
+  {
+   "seq": 17,
+   "name": "中国国防动员网",
+   "domains": [
+    "www.gfdy.gov.cn"
+   ],
+   "license": "10120170013"
+  },
+  {
+   "seq": 18,
+   "name": "中国工农红军长征网",
+   "domains": [
+    "www.changzheng.81.cn",
+    "www.longmarch.81.cn"
+   ],
+   "license": "10120170013"
+  },
+  {
+   "seq": 19,
+   "name": "中青在线",
+   "domains": [
+    "www.cyol.com",
+    "www.cyol.net"
+   ],
+   "license": "10120170015"
+  },
+  {
+   "seq": 20,
+   "name": "中国石油新闻中心",
+   "domains": [
+    "www.oilnews.com.cn"
+   ],
+   "license": "10120170016"
+  },
+  {
+   "seq": 21,
+   "name": "中国石化新闻网",
+   "domains": [
+    "www.sinopecnews.com.cn"
+   ],
+   "license": "10120170018"
+  },
+  {
+   "seq": 22,
+   "name": "中国水利网站",
+   "domains": [
+    "www.chinawater.com.cn"
+   ],
+   "license": "10120170019"
+  },
+  {
+   "seq": 23,
+   "name": "中国能源新闻网",
+   "domains": [
+    "www.cpnn.com.cn"
+   ],
+   "license": "10120170021"
+  },
+  {
+   "seq": 24,
+   "name": "中国消费网",
+   "domains": [
+    "www.ccn.com.cn"
+   ],
+   "license": "10120170022"
+  },
+  {
+   "seq": 25,
+   "name": "中国市场监管新闻网",
+   "domains": [
+    "www.cmrnn.com.cn"
+   ],
+   "license": "10120170023"
+  },
+  {
+   "seq": 26,
+   "name": "神州学人网",
+   "domains": [
+    "www.chisa.edu.cn"
+   ],
+   "license": "10120170024"
+  },
+  {
+   "seq": 27,
+   "name": "中国教育新闻网",
+   "domains": [
+    "www.jyb.cn"
+   ],
+   "license": "10120170024"
+  },
+  {
+   "seq": 28,
+   "name": "中国汽车报网",
+   "domains": [
+    "www.cnautonews.com"
+   ],
+   "license": "10120170025"
+  },
+  {
+   "seq": 29,
+   "name": "中国民航网",
+   "domains": [
+    "www.caacnews.com.cn"
+   ],
+   "license": "10120170026"
+  },
+  {
+   "seq": 30,
+   "name": "健康报网",
+   "domains": [
+    "www.jkb.com.cn",
+    "www.healthnews.com.cn"
+   ],
+   "license": "10120170027"
+  },
+  {
+   "seq": 31,
+   "name": "新体育网",
+   "domains": [
+    "www.new-sports.cn",
+    "www.sportsol.com.cn"
+   ],
+   "license": "10120170028"
+  },
+  {
+   "seq": 32,
+   "name": "中国法院网",
+   "domains": [
+    "www.chinacourt.cn"
+   ],
+   "license": "10120170029"
+  },
+  {
+   "seq": 33,
+   "name": "中国交通新闻网",
+   "domains": [
+    "www.zgjtb.com"
+   ],
+   "license": "10120170030"
+  },
+  {
+   "seq": 34,
+   "name": "消费日报网",
+   "domains": [
+    "www.xfrb.com.cn"
+   ],
+   "license": "10120170031"
+  },
+  {
+   "seq": 35,
+   "name": "中国质量新闻网（中国质检网）",
+   "domains": [
+    "www.cqn.com.cn"
+   ],
+   "license": "10120170032"
+  },
+  {
+   "seq": 36,
+   "name": "中国食品药品网",
+   "domains": [
+    "www.cnpharm.com"
+   ],
+   "license": "10120170033"
+  },
+  {
+   "seq": 37,
+   "name": "中国税网",
+   "domains": [
+    "www.ctaxnews.com.cn"
+   ],
+   "license": "10120170034"
+  },
+  {
+   "seq": 38,
+   "name": "绿色中国网络电视",
+   "domains": [
+    "www.greenchina.tv"
+   ],
+   "license": "10120170035"
+  },
+  {
+   "seq": 39,
+   "name": "中国记协网",
+   "domains": [
+    "www.zgjx.cn"
+   ],
+   "license": "10120170036"
+  },
+  {
+   "seq": 40,
+   "name": "中工网",
+   "domains": [
+    "www.workercn.cn"
+   ],
+   "license": "10120170038"
+  },
+  {
+   "seq": 41,
+   "name": "环球网",
+   "domains": [
+    "www.huanqiu.com"
+   ],
+   "license": "10120170039"
+  },
+  {
+   "seq": 42,
+   "name": "中国新闻周刊网",
+   "domains": [
+    "www.inewsweek.cn"
+   ],
+   "license": "10120170040"
+  },
+  {
+   "seq": 43,
+   "name": "中国文明网",
+   "domains": [
+    "www.wenming.cn"
+   ],
+   "license": "10120170041"
+  },
+  {
+   "seq": 44,
+   "name": "学习时报网",
+   "domains": [
+    "www.studytimes.cn"
+   ],
+   "license": "10120170044"
+  },
+  {
+   "seq": 45,
+   "name": "中国商报网（中国商网）",
+   "domains": [
+    "www.zgswcn.com",
+    "www.zgswcn.cn"
+   ],
+   "license": "10120170045"
+  },
+  {
+   "seq": 46,
+   "name": "人民论坛网",
+   "domains": [
+    "www.rmlt.com.cn"
+   ],
+   "license": "10120170047"
+  },
+  {
+   "seq": 47,
+   "name": "未来网",
+   "domains": [
+    "www.k618.cn"
+   ],
+   "license": "10120170048"
+  },
+  {
+   "seq": 48,
+   "name": "经济网",
+   "domains": [
+    "www.ceweekly.cn"
+   ],
+   "license": "10120170050"
+  },
+  {
+   "seq": 49,
+   "name": "民主与法制网",
+   "domains": [
+    "www.mzyfz.com"
+   ],
+   "license": "10120170052"
+  },
+  {
+   "seq": 50,
+   "name": "中国文艺网",
+   "domains": [
+    "www.cflac.org.cn"
+   ],
+   "license": "10120170053"
+  },
+  {
+   "seq": 51,
+   "name": "中国搜索",
+   "domains": [
+    "www.chinaso.com"
+   ],
+   "license": "10120170054"
+  },
+  {
+   "seq": 52,
+   "name": "半月谈网",
+   "domains": [
+    "www.banyuetan.org"
+   ],
+   "license": "10120170055"
+  },
+  {
+   "seq": 53,
+   "name": "环球人物网",
+   "domains": [
+    "www.globalpeople.com.cn",
+    "www.hqrw.com.cn"
+   ],
+   "license": "10120170056"
+  },
+  {
+   "seq": 54,
+   "name": "海外网",
+   "domains": [
+    "www.haiwainet.cn"
+   ],
+   "license": "10120170057"
+  },
+  {
+   "seq": 55,
+   "name": "中国军视网",
+   "domains": [
+    "www.js7tv.cn"
+   ],
+   "license": "10120170058"
+  },
+  {
+   "seq": 56,
+   "name": "中国组织人事报新闻网",
+   "domains": [
+    "www.zuzhirenshi.com"
+   ],
+   "license": "10120170061"
+  },
+  {
+   "seq": 57,
+   "name": "中国农村网",
+   "domains": [
+    "www.crnews.net"
+   ],
+   "license": "10120170062"
+  },
+  {
+   "seq": 58,
+   "name": "旗帜网",
+   "domains": [
+    "www.qizhiwang.org.cn",
+    "www.gongwei.org.cn"
+   ],
+   "license": "10120170065"
+  },
+  {
+   "seq": 59,
+   "name": "证券时报网",
+   "domains": [
+    "www.stcn.com"
+   ],
+   "license": "10120170066"
+  },
+  {
+   "seq": 60,
+   "name": "e公司",
+   "domains": [
+    "www.egsea.com"
+   ],
+   "license": "10120170066"
+  },
+  {
+   "seq": 61,
+   "name": "券中社",
+   "domains": [
+    "www.quanzhongshe.com"
+   ],
+   "license": "10120170066"
+  },
+  {
+   "seq": 62,
+   "name": "中国劳动保障新闻网",
+   "domains": [
+    "www.clssn.com"
+   ],
+   "license": "10120170068"
+  },
+  {
+   "seq": 63,
+   "name": "中国工信新闻网",
+   "domains": [
+    "www.cnii.com.cn"
+   ],
+   "license": "10120170069"
+  },
+  {
+   "seq": 64,
+   "name": "华夏经纬网",
+   "domains": [
+    "www.huaxia.com",
+    "www.viewcn.com"
+   ],
+   "license": "10120170072"
+  },
+  {
+   "seq": 65,
+   "name": "中国金融新闻网",
+   "domains": [
+    "www.financialnews.com.cn"
+   ],
+   "license": "10120170073"
+  },
+  {
+   "seq": 66,
+   "name": "中国财经报网",
+   "domains": [
+    "www.cfen.com.cn",
+    "www.cfen.cn"
+   ],
+   "license": "10120170074"
+  },
+  {
+   "seq": 67,
+   "name": "中国旅游新闻网",
+   "domains": [
+    "www.ctnews.com.cn"
+   ],
+   "license": "10120170075"
+  },
+  {
+   "seq": 68,
+   "name": "中国商务新闻网",
+   "domains": [
+    "www.comnews.cn"
+   ],
+   "license": "10120170076"
+  },
+  {
+   "seq": 69,
+   "name": "中国有色网",
+   "domains": [
+    "www.cnmn.com.cn"
+   ],
+   "license": "10120170077"
+  },
+  {
+   "seq": 70,
+   "name": "中国农网",
+   "domains": [
+    "www.farmer.com.cn"
+   ],
+   "license": "10120170078"
+  },
+  {
+   "seq": 71,
+   "name": "人民政协网",
+   "domains": [
+    "www.rmzxb.com.cn"
+   ],
+   "license": "10120170079"
+  },
+  {
+   "seq": 72,
+   "name": "人民铁道网",
+   "domains": [
+    "www.peoplerail.com"
+   ],
+   "license": "10120170080"
+  },
+  {
+   "seq": 73,
+   "name": "中国教育网络电视台",
+   "domains": [
+    "www.centv.cn"
+   ],
+   "license": "10120170081"
+  },
+  {
+   "seq": 74,
+   "name": "党建网",
+   "domains": [
+    "www.dangjian.com",
+    "www.dangjian.cn"
+   ],
+   "license": "10120170083"
+  },
+  {
+   "seq": 75,
+   "name": "中国税务网",
+   "domains": [
+    "www.ctax.org.cn"
+   ],
+   "license": "10120170084"
+  },
+  {
+   "seq": 76,
+   "name": "中国安全生产网",
+   "domains": [
+    "www.aqsc.cn"
+   ],
+   "license": "10120170087"
+  },
+  {
+   "seq": 77,
+   "name": "中国煤炭网",
+   "domains": [
+    "www.ccoalnews.com"
+   ],
+   "license": "10120170087"
+  },
+  {
+   "seq": 78,
+   "name": "参考消息网",
+   "domains": [
+    "www.cankaoxiaoxi.com"
+   ],
+   "license": "10120180001"
+  },
+  {
+   "seq": 79,
+   "name": "中国食品安全网",
+   "domains": [
+    "www.cfsn.cn"
+   ],
+   "license": "10120180002"
+  },
+  {
+   "seq": 80,
+   "name": "中国经营网",
+   "domains": [
+    "www.cb.com.cn"
+   ],
+   "license": "10120180003"
+  },
+  {
+   "seq": 81,
+   "name": "商学院杂志",
+   "domains": [
+    "www.bmronline.com.cn"
+   ],
+   "license": "10120180003"
+  },
+  {
+   "seq": 82,
+   "name": "家族企业杂志",
+   "domains": [
+    "www.cfbr.com.cn"
+   ],
+   "license": "10120180003"
+  },
+  {
+   "seq": 83,
+   "name": "农视网",
+   "domains": [
+    "www.ntv.cn"
+   ],
+   "license": "10120180004"
+  },
+  {
+   "seq": 84,
+   "name": "中国经济新闻网",
+   "domains": [
+    "www.cet.com.cn"
+   ],
+   "license": "10120180005"
+  },
+  {
+   "seq": 85,
+   "name": "中国火炬杂志",
+   "domains": [
+    "www.china-torch.cn"
+   ],
+   "license": "10120180006"
+  },
+  {
+   "seq": 86,
+   "name": "关爱下一代网",
+   "domains": [
+    "www.chinacngn.cn"
+   ],
+   "license": "10120180006"
+  },
+  {
+   "seq": 87,
+   "name": "CGTN",
+   "domains": [
+    "www.cgtn.com"
+   ],
+   "license": "10120180008"
+  },
+  {
+   "seq": 88,
+   "name": "中国财富网",
+   "domains": [
+    "www.cfbond.com"
+   ],
+   "license": "10120180009"
+  },
+  {
+   "seq": 89,
+   "name": "中国新闻网",
+   "domains": [
+    "www.chinanews.com",
+    "www.chinanews.com.cn"
+   ],
+   "license": "10120180010"
+  },
+  {
+   "seq": 90,
+   "name": "中国水运网",
+   "domains": [
+    "www.zgsyb.com"
+   ],
+   "license": "10120180012"
+  },
+  {
+   "seq": 91,
+   "name": "人民周刊网",
+   "domains": [
+    "www.peopleweekly.cn"
+   ],
+   "license": "10120180013"
+  },
+  {
+   "seq": 92,
+   "name": "人民财经网",
+   "domains": [
+    "www.peoplecen.com"
+   ],
+   "license": "10120180013"
+  },
+  {
+   "seq": 93,
+   "name": "人民研学网",
+   "domains": [
+    "www.peoplehibl.com"
+   ],
+   "license": "10120180013"
+  },
+  {
+   "seq": 94,
+   "name": "华夏时报网",
+   "domains": [
+    "www.chinatimes.net.cn"
+   ],
+   "license": "10120180015"
+  },
+  {
+   "seq": 95,
+   "name": "中国人权网",
+   "domains": [
+    "www.humanrights.cn"
+   ],
+   "license": "10120180016"
+  },
+  {
+   "seq": 96,
+   "name": "中国新疆网",
+   "domains": [
+    "www.chinaxinjiang.cn"
+   ],
+   "license": "10120180016"
+  },
+  {
+   "seq": 97,
+   "name": "西藏在线网",
+   "domains": [
+    "www.tibetol.cn"
+   ],
+   "license": "10120180016"
+  },
+  {
+   "seq": 98,
+   "name": "西藏文化网",
+   "domains": [
+    "www.tibetculture.org.cn"
+   ],
+   "license": "10120180017"
+  },
+  {
+   "seq": 99,
+   "name": "人民日报",
+   "domains": [
+    "www.peopleapp.com"
+   ],
+   "license": "10120180018"
+  },
+  {
+   "seq": 100,
+   "name": "中国家庭报",
+   "domains": [
+    "www.cfnews.org.cn"
+   ],
+   "license": "10120180020"
+  },
+  {
+   "seq": 101,
+   "name": "中国电影报",
+   "domains": [
+    "www.chinafilmnews.cn"
+   ],
+   "license": "10120180021"
+  },
+  {
+   "seq": 102,
+   "name": "中国妇女网",
+   "domains": [
+    "www.cnwomen.com.cn"
+   ],
+   "license": "10120180022"
+  },
+  {
+   "seq": 103,
+   "name": "中国作家网",
+   "domains": [
+    "www.chinawriter.com.cn"
+   ],
+   "license": "10120180023"
+  },
+  {
+   "seq": 104,
+   "name": "中国民族宗教网",
+   "domains": [
+    "www.mzb.com.cn"
+   ],
+   "license": "10120180024"
+  },
+  {
+   "seq": 105,
+   "name": "形势政策网",
+   "domains": [
+    "www.xingshizhengce.com"
+   ],
+   "license": "10120180025"
+  },
+  {
+   "seq": 106,
+   "name": "Global Times",
+   "domains": [
+    "www.globaltimes.cn"
+   ],
+   "license": "10120180026"
+  },
+  {
+   "seq": 107,
+   "name": "人民数字联播网",
+   "domains": [
+    "www.rmsznet.com"
+   ],
+   "license": "10120180027"
+  },
+  {
+   "seq": 108,
+   "name": "健康时报网",
+   "domains": [
+    "www.jksb.com.cn"
+   ],
+   "license": "10120180028"
+  },
+  {
+   "seq": 109,
+   "name": "民生网",
+   "domains": [
+    "www.msweekly.com"
+   ],
+   "license": "10120180029"
+  },
+  {
+   "seq": 110,
+   "name": "县域经济网",
+   "domains": [
+    "www.xyshjj.cn"
+   ],
+   "license": "10120190003"
+  },
+  {
+   "seq": 111,
+   "name": "经济网",
+   "domains": [
+    "www.jingji.com.cn"
+   ],
+   "license": "10120190004"
+  },
+  {
+   "seq": 112,
+   "name": "中国城市网",
+   "domains": [
+    "www.zgcsb.com"
+   ],
+   "license": "10120190005"
+  },
+  {
+   "seq": 113,
+   "name": "中国能源网",
+   "domains": [
+    "www.cnenergynews.cn"
+   ],
+   "license": "10120190006"
+  },
+  {
+   "seq": 114,
+   "name": "人民画报社",
+   "domains": [
+    "www.rmhb.com.cn"
+   ],
+   "license": "10120190008"
+  },
+  {
+   "seq": 115,
+   "name": "画报",
+   "domains": [
+    "www.kitaichina.com"
+   ],
+   "license": "10120190008"
+  },
+  {
+   "seq": 116,
+   "name": "china pictorial",
+   "domains": [
+    "www.china-pictorial.com.cn"
+   ],
+   "license": "10120190008"
+  },
+  {
+   "seq": 117,
+   "name": "中国建设新闻网",
+   "domains": [
+    "www.chinajsb.cn",
+    "www.cincn.cn",
+    "www.zhuj.com",
+    "www.zgjsb.cn"
+   ],
+   "license": "10120190011"
+  },
+  {
+   "seq": 118,
+   "name": "经济参考网",
+   "domains": [
+    "www.jjckb.cn"
+   ],
+   "license": "10120190012"
+  },
+  {
+   "seq": 119,
+   "name": "上海证券报社有限公司",
+   "domains": [
+    "www.cnstock.com"
+   ],
+   "license": "10120190013"
+  },
+  {
+   "seq": 120,
+   "name": "中国银行保险报网",
+   "domains": [
+    "www.cfmc.cn"
+   ],
+   "license": "10120190014"
+  },
+  {
+   "seq": 121,
+   "name": "环球国际视频通讯社-全球发布系统",
+   "domains": [
+    "www.cctvplus.com"
+   ],
+   "license": "10120190015"
+  },
+  {
+   "seq": 122,
+   "name": "人民中国杂志社",
+   "domains": [
+    "www.peoplechina.com.cn"
+   ],
+   "license": "10120190016"
+  },
+  {
+   "seq": 123,
+   "name": "中国报道",
+   "domains": [
+    "www.chinareports.org.cn"
+   ],
+   "license": "10120190016"
+  },
+  {
+   "seq": 124,
+   "name": "中国外文局亚太传播中心韩文网站",
+   "domains": [
+    "www.cn-kr.com.cn"
+   ],
+   "license": "10120190016"
+  },
+  {
+   "seq": 125,
+   "name": "apc",
+   "domains": [
+    "www.pekinshuho.com.cn"
+   ],
+   "license": "10120190016"
+  },
+  {
+   "seq": 126,
+   "name": "壹生",
+   "domains": [
+    "www.cmtopdr.com"
+   ],
+   "license": "10120190017"
+  },
+  {
+   "seq": 127,
+   "name": "中国知识产权资讯网",
+   "domains": [
+    "www.iprchn.com"
+   ],
+   "license": "10120190019"
+  },
+  {
+   "seq": 128,
+   "name": "中国企业家网",
+   "domains": [
+    "www.iceo.com.cn",
+    "www.cnemag.com.cn"
+   ],
+   "license": "10120190020"
+  },
+  {
+   "seq": 129,
+   "name": "当代世界",
+   "domains": [
+    "www.ddsjcn.com"
+   ],
+   "license": "10120190023"
+  },
+  {
+   "seq": 130,
+   "name": "北京周报中文网",
+   "domains": [
+    "www.beijingreview.com.cn"
+   ],
+   "license": "10120200001"
+  },
+  {
+   "seq": 131,
+   "name": "北京周报英文网",
+   "domains": [
+    "www.bjreview.com"
+   ],
+   "license": "10120200001"
+  },
+  {
+   "seq": 132,
+   "name": "北京周报法文网",
+   "domains": [
+    "www.bjinformation.com"
+   ],
+   "license": "10120200001"
+  },
+  {
+   "seq": 133,
+   "name": "北京周报日文网",
+   "domains": [
+    "www.pekinshuho.com"
+   ],
+   "license": "10120200001"
+  },
+  {
+   "seq": 134,
+   "name": "北京周报德文网",
+   "domains": [
+    "www.bjrundschau.com"
+   ],
+   "license": "10120200001"
+  },
+  {
+   "seq": 135,
+   "name": "中国环境",
+   "domains": [
+    "www.cenews.com.cn"
+   ],
+   "license": "10120200002"
+  },
+  {
+   "seq": 136,
+   "name": "金台网",
+   "domains": [
+    "www.jintai.com.cn"
+   ],
+   "license": "10120200003"
+  },
+  {
+   "seq": 137,
+   "name": "中国品牌论坛",
+   "domains": [
+    "www.brandforum.cn"
+   ],
+   "license": "10120200003"
+  },
+  {
+   "seq": 138,
+   "name": "经济日报出版社",
+   "domains": [
+    "www.edpbook.com.cn"
+   ],
+   "license": "10120200004"
+  },
+  {
+   "seq": 139,
+   "name": "中国房地产报网",
+   "domains": [
+    "www.creb.com.cn"
+   ],
+   "license": "10120200006"
+  },
+  {
+   "seq": 140,
+   "name": "《国家人文历史》官方网站",
+   "domains": [
+    "www.gjrwls.com"
+   ],
+   "license": "10120200007"
+  },
+  {
+   "seq": 141,
+   "name": "党建参阅网",
+   "domains": [
+    "www.djcyw.com.cn"
+   ],
+   "license": "10120200007"
+  },
+  {
+   "seq": 142,
+   "name": "中华工商网",
+   "domains": [
+    "www.cbt.com.cn"
+   ],
+   "license": "10120200008"
+  },
+  {
+   "seq": 143,
+   "name": "中证网",
+   "domains": [
+    "www.cs.com.cn"
+   ],
+   "license": "10120200010"
+  },
+  {
+   "seq": 144,
+   "name": "中国基金报",
+   "domains": [
+    "www.chnfund.com"
+   ],
+   "license": "10120200011"
+  },
+  {
+   "seq": 145,
+   "name": "中国林业新闻网",
+   "domains": [
+    "www.greentimes.com"
+   ],
+   "license": "10120200013"
+  },
+  {
+   "seq": 146,
+   "name": "国际金融报网",
+   "domains": [
+    "www.ifnews.com"
+   ],
+   "license": "10120200015"
+  },
+  {
+   "seq": 147,
+   "name": "中国城市建设网",
+   "domains": [
+    "www.zgcsjs.org.cn"
+   ],
+   "license": "10120200016"
+  },
+  {
+   "seq": 148,
+   "name": "央广网",
+   "domains": [
+    "www.cnr.cn"
+   ],
+   "license": "10120210001"
+  },
+  {
+   "seq": 149,
+   "name": "中国中医药网",
+   "domains": [
+    "www.cntcm.com.cn"
+   ],
+   "license": "10120210002"
+  },
+  {
+   "seq": 150,
+   "name": "中国食品报网",
+   "domains": [
+    "www.cnfood.cn"
+   ],
+   "license": "10120210003"
+  },
+  {
+   "seq": 151,
+   "name": "中国科技网",
+   "domains": [
+    "www.stdaily.com"
+   ],
+   "license": "10120220001"
+  },
+  {
+   "seq": 152,
+   "name": "中国社会科学网",
+   "domains": [
+    "www.cssn.cn"
+   ],
+   "license": "10120220003"
+  },
+  {
+   "seq": 153,
+   "name": "中国报业网",
+   "domains": [
+    "www.cnpiw.cn"
+   ],
+   "license": "10120220004"
+  },
+  {
+   "seq": 154,
+   "name": "党报头条官网",
+   "domains": [
+    "www.dangbaotoutiao.com"
+   ],
+   "license": "10120220004"
+  },
+  {
+   "seq": 155,
+   "name": "中国发展网",
+   "domains": [
+    "www.chinadevelopment.com.cn"
+   ],
+   "license": "10120230001"
+  },
+  {
+   "seq": 156,
+   "name": "改革网",
+   "domains": [
+    "www.cfgw.net.cn"
+   ],
+   "license": "10120230001"
+  },
+  {
+   "seq": 157,
+   "name": "中国民族网",
+   "domains": [
+    "www.56-china.com.cn"
+   ],
+   "license": "10120230002"
+  },
+  {
+   "seq": 158,
+   "name": "民族画报网站",
+   "domains": [
+    "www.mzhb.com"
+   ],
+   "license": "10120230003"
+  },
+  {
+   "seq": 159,
+   "name": "中国乡村振兴网",
+   "domains": [
+    "www.zgxczxzz.com"
+   ],
+   "license": "10120230004"
+  },
+  {
+   "seq": 160,
+   "name": "中国航天新闻",
+   "domains": [
+    "www.chinaspacenews.com.cn"
+   ],
+   "license": "10120230005"
+  },
+  {
+   "seq": 161,
+   "name": "《知识就是力量》杂志社有限公司",
+   "domains": [
+    "www.zhilikp.com"
+   ],
+   "license": "10120230006"
+  },
+  {
+   "seq": 162,
+   "name": "科学网",
+   "domains": [
+    "www.sciencenet.cn"
+   ],
+   "license": "10120230008"
+  },
+  {
+   "seq": 163,
+   "name": "中宏网",
+   "domains": [
+    "www.zhonghongwang.com"
+   ],
+   "license": "10120230012"
+  },
+  {
+   "seq": 164,
+   "name": "i自然",
+   "domains": [
+    "www.iziran.net"
+   ],
+   "license": "10120230013"
+  },
+  {
+   "seq": 165,
+   "name": "中国残疾人网",
+   "domains": [
+    "www.chinadp.net.cn"
+   ],
+   "license": "10120230014"
+  },
+  {
+   "seq": 166,
+   "name": "中国金融信息网",
+   "domains": [
+    "www.cnfin.com",
+    "www.xinhua08.com"
+   ],
+   "license": "10120230015"
+  },
+  {
+   "seq": 167,
+   "name": "正义网",
+   "domains": [
+    "www.jcrb.com"
+   ],
+   "license": "10120230016"
+  },
+  {
+   "seq": 168,
+   "name": "中国邮政报",
+   "domains": [
+    "www.chinapostnews.com.cn"
+   ],
+   "license": "10120240001"
+  },
+  {
+   "seq": 169,
+   "name": "中国邮政视频网",
+   "domains": [
+    "www.ctvpost.com"
+   ],
+   "license": "10120240001"
+  },
+  {
+   "seq": 170,
+   "name": "法治网",
+   "domains": [
+    "www.legaldaily.com.cn"
+   ],
+   "license": "10120240002"
+  },
+  {
+   "seq": 171,
+   "name": "团结网",
+   "domains": [
+    "www.tuanjiebao.com",
+    "www.tuanjiewang.cn"
+   ],
+   "license": "10120240004"
+  },
+  {
+   "seq": 172,
+   "name": "企业观察网",
+   "domains": [
+    "www.cneo.com.cn"
+   ],
+   "license": "10120240005"
+  },
+  {
+   "seq": 173,
+   "name": "求是网",
+   "domains": [
+    "www.qstheory.cn"
+   ],
+   "license": "10120240006"
+  },
+  {
+   "seq": 174,
+   "name": "中国工业新闻网",
+   "domains": [
+    "www.cinn.cn"
+   ],
+   "license": "10120240011"
+  },
+  {
+   "seq": 175,
+   "name": "中国金融在线",
+   "domains": [
+    "www.cnfinance.cn"
+   ],
+   "license": "10120240012"
+  },
+  {
+   "seq": 176,
+   "name": "中国妇女（英文）网",
+   "domains": [
+    "www.womenofchina.cn"
+   ],
+   "license": "10120240013"
+  },
+  {
+   "seq": 177,
+   "name": "巾帼网",
+   "domains": [
+    "www.womenvoice.cn"
+   ],
+   "license": "10120240013"
+  },
+  {
+   "seq": 178,
+   "name": "中国财政杂志社",
+   "domains": [
+    "www.zgcznet.com"
+   ],
+   "license": "10120240014"
+  },
+  {
+   "seq": 179,
+   "name": "电网头条",
+   "domains": [
+    "www.sgcctop.com"
+   ],
+   "license": "10120240015"
+  },
+  {
+   "seq": 180,
+   "name": "生命时报",
+   "domains": [
+    "www.lifetimes.cn"
+   ],
+   "license": "10120240016"
+  },
+  {
+   "seq": 181,
+   "name": "中国妇女",
+   "domains": [
+    "www.womenofchina.com"
+   ],
+   "license": "10120240018"
+  },
+  {
+   "seq": 182,
+   "name": "中国气象新闻网",
+   "domains": [
+    "www.zgqxb.com.cn"
+   ],
+   "license": "10120240019"
+  },
+  {
+   "seq": 183,
+   "name": "证券日报网",
+   "domains": [
+    "www.zqrb.cn"
+   ],
+   "license": "10120240020"
+  },
+  {
+   "seq": 184,
+   "name": "中国城乡金融报",
+   "domains": [
+    "www.zgcxjrb.com"
+   ],
+   "license": "10120240023"
+  },
+  {
+   "seq": 185,
+   "name": "今日中国",
+   "domains": [
+    "www.chinatoday.com.cn"
+   ],
+   "license": "10120240024"
+  },
+  {
+   "seq": 186,
+   "name": "中国石油企业杂志社",
+   "domains": [
+    "www.cpezg.com"
+   ],
+   "license": "10120240025"
+  },
+  {
+   "seq": 187,
+   "name": "婚姻与家庭杂志",
+   "domains": [
+    "www.mf-china.com.cn"
+   ],
+   "license": "10120250001"
+  },
+  {
+   "seq": 188,
+   "name": "中国名牌网",
+   "domains": [
+    "www.chinatopbrands.net"
+   ],
+   "license": "10120250002"
+  },
+  {
+   "seq": 189,
+   "name": "中国新闻出版广电网",
+   "domains": [
+    "www.chinaxwcb.com"
+   ],
+   "license": "10120250003"
+  },
+  {
+   "seq": 190,
+   "name": "人民政协网",
+   "domains": [
+    "www.rmzxw.com.cn"
+   ],
+   "license": "10120250011"
+  },
+  {
+   "seq": 191,
+   "name": "中国警察网",
+   "domains": [
+    "www.cpd.com.cn"
+   ],
+   "license": "10120250015"
+  },
+  {
+   "seq": 192,
+   "name": "中国贸易报",
+   "domains": [
+    "www.chinatradenews.com.cn"
+   ],
+   "license": "10120260001"
+  },
+  {
+   "seq": 193,
+   "name": "学习强国",
+   "domains": [
+    "www.xuexi.cn"
+   ],
+   "license": "10120260003"
+  }
+ ]
+}

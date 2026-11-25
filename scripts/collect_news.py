@@ -237,6 +237,63 @@ FOCUS_KEEP = (
 FOCUS_ENABLED = True
 FRESH_MODE = False  # --fresh 时丢弃历史 crawled，仅保留本次抓取结果
 
+# 网信办《互联网新闻信息服务单位许可信息》中央互联网站名单（193 家）
+# 作为「中央级」判定的权威依据；区县级媒体名称特征由 news_data.json 的 media_policy 配置。
+REGISTRY_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "assets", "cac_media_registry.json",
+)
+
+
+def _load_central_registry():
+    names, domains = set(), set()
+    try:
+        with open(REGISTRY_FILE, encoding="utf-8") as f:
+            for row in json.load(f).get("central_websites", []):
+                if row.get("name"):
+                    names.add(row["name"])
+                for d in row.get("domains", []):
+                    domains.add(re.sub(r"^www\.", "", d.lower()))
+    except (OSError, ValueError):
+        pass
+    return names, domains
+
+
+CENTRAL_NAMES, CENTRAL_DOMAINS = _load_central_registry()
+DEFAULT_COUNTY_MARKERS = ("融媒体中心", "融媒", "新闻网", "广播电视台", "传媒中心",
+                          "发布", "政府网", "广电", "日报", "视听", "在线")
+DEFAULT_PROVINCIAL_MARKERS = ("人民日报", "新华社", "新华网", "央视", "中国新闻",
+                              "工人日报", "中工网", "中国网", "中国记协", "日报",
+                              "晚报", "晨报", "商报", "新闻网", "广播电视台", "卫视",
+                              "澎湃", "封面", "上游", "极目", "九派", "界面",
+                              "新京报", "红星", "大象", "海报", "南方", "光明网",
+                              "中国新闻周刊", "周刊", "杂志")
+
+
+def media_level(name, url="", policy=None):
+    """按网信办许可名单 + 名称特征判定媒体级别：中央 / 省级 / 地市级 / 区县级 / 其他。"""
+    p = policy or {}
+    n, u = name or "", (url or "").lower()
+    county = p.get("county_markers") or DEFAULT_COUNTY_MARKERS
+    provincial = p.get("provincial_markers") or DEFAULT_PROVINCIAL_MARKERS
+    if n in CENTRAL_NAMES or any(d in u for d in CENTRAL_DOMAINS):
+        return "中央"
+    if re.search(r"[区县]", n) and any(k in n for k in county):
+        return "区县级"
+    if "市" in n and any(k in n for k in provincial):
+        return "地市级"
+    if any(k in n for k in provincial):
+        return "省级"
+    return "其他"
+
+
+def is_allowed_media(x, policy=None):
+    """区县级媒体默认不纳入（filter_county_level=false 可关闭）。"""
+    p = policy or {}
+    if not p.get("filter_county_level", True):
+        return True
+    return media_level(x.get("media", ""), x.get("url", ""), p) != "区县级"
+
 
 def is_social_focus(x):
     """判定是否为社会民生强相关的事件报道；政务通知类与软内容返回 False。"""
@@ -752,6 +809,7 @@ def dedup_items(items, threshold):
 
 def crawl(data, days, max_per_source):
     fresh = []
+    media_policy = data.get("media_policy", {})
     cutoff = (datetime.strptime(TODAY, "%Y-%m-%d") - timedelta(days=days)).strftime("%Y-%m-%d")
     # 页面未提供发布时间时，沿用同一 URL 首次抓取时记录的日期，防止重跑把日期滚动到今天
     old_dates = {x["url"]: x["date"] for x in data.get("crawled", [])
@@ -769,7 +827,7 @@ def crawl(data, days, max_per_source):
         got = [x for x in parser(body, src) if x]
         # 抓取阶段就按社会民生聚焦标准过滤：标签词表为多维度归类而扩得很宽，
         # 不能拿它当准入条件，否则政务/国际/软内容会大量涌进数据文件
-        got = [x for x in got if is_social_focus(x)]
+        got = [x for x in got if is_social_focus(x) and is_allowed_media(x, media_policy)]
         if src.get("recent_only", True):
             got = [x for x in got if not x["date"] or x["date"] >= cutoff]
         if src.get("mode", "keyword") == "keyword":
@@ -839,8 +897,12 @@ def all_items(data, apply_focus=True):
     for y in crawled:
         y["topics"] = normalize_topics(y)
     merged = [x for x in curated + crawled if within_window(x, cutoff)]
+    policy = data.get("media_policy", {})
     if apply_focus:
-        merged = [x for x in merged if is_social_focus(x)]
+        merged = [x for x in merged
+                  if is_social_focus(x) and is_allowed_media(x, policy)]
+    for y in merged:
+        y["media_level"] = media_level(y.get("media", ""), y.get("url", ""), policy)
     return merged
 
 
@@ -878,14 +940,14 @@ def safe_write(path, text, encoding="utf-8"):
 
 def build_csv(data):
     import io
-    header = ["数据批次", "日期", "媒体", "类型", "栏目", "报道形态", "标题", "主题标签", "链接", "备注", "同题报道数"]
+    header = ["数据批次", "日期", "媒体", "媒体级别", "类型", "栏目", "报道形态", "标题", "主题标签", "链接", "备注", "同题报道数"]
     buf = io.StringIO(newline="")
     w = csv.writer(buf)
     w.writerow(header)
     for x in all_items(data):
         w.writerow([
             x.get("bucket", ""), x.get("date", ""), x.get("media", ""),
-            x.get("type", ""), x.get("column", ""), x.get("form", ""),
+            x.get("media_level", ""), x.get("type", ""), x.get("column", ""), x.get("form", ""),
             x.get("title", ""), " / ".join(x.get("topics", [])),
                 x.get("url", ""), x.get("note", ""), x.get("dup_count", 0),
             ])
@@ -930,6 +992,7 @@ button.primary:hover{opacity:.9;color:#fff}
 .refresh-note{color:var(--muted);font-size:12px;margin:0 2px 12px;line-height:1.6}
 .auto-chk{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);white-space:nowrap}
 .auto-chk input{accent-color:var(--blue)}
+.mlevel{display:inline-block;border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:10px;color:var(--muted);margin-left:3px;vertical-align:middle}
 .list{display:grid;gap:10px}
 .item{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:14px 16px;display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:start}
 .item:hover{border-color:#c9d6f5;box-shadow:0 3px 14px rgba(47,95,224,.06)}
@@ -992,6 +1055,11 @@ footer{margin-top:30px;color:var(--muted);font-size:12px;border-top:1px solid va
     </select>
     <input type="date" id="dateFrom" style="display:none">
     <input type="date" id="dateTo" style="display:none">
+    <select id="fMediaLevel" autocomplete="off">
+      <option value="no_county" selected>媒体：排除区县级</option>
+      <option value="all">媒体：全部</option>
+      <option value="central_provincial">媒体：仅中央/省级</option>
+    </select>
     <button id="reset">重置</button>
     <button class="primary" id="export">导出 CSV</button>
     <button id="refresh">⟳ 刷新数据</button>
@@ -1070,7 +1138,8 @@ document.getElementById('howto').innerHTML = [
   '<b>⑪ 发布日期</b>：显示的是稿件<b>真实发布日期</b>，不是抓取当天。澎湃栏目页 JSON-LD 的 <code>datePublished</code>、上游 URL 自带日期、九派微博时间、封面 / 界面 / 新京报的「N天前」「MM-DD」均已解析；页面确实未给日期的按 URL 沿用<b>首次抓取日</b>，重复运行不会把旧稿日期滚动到今天。每条带 <code>date_source</code>（published / first_seen / fetch_day）可追溯。',
   '<b>⑫ 即时刷新</b>：工具栏「⟳ 刷新数据」可立即比对服务端 HTML 里内嵌的数据快照；打开「自动检测」后每 30 秒检查一次，后台运行 <code>collect_news.py</code> 重建看板，页面会<b>自动发现并重载</b>，无需手动 F5。看板是单文件离线网页，<b>前端无法触发采集</b>——要拿新新闻仍需先跑一次脚本。以 <code>file://</code> 直接打开时 fetch 受限，按钮退化为直接重载页面，状态栏会提示。',
   '<b>⑬ 日期筛选</b>：工具栏日期下拉默认「<b>近 30 天（一个月）</b>」，可切近 7 天 / 近 90 天 / 全部日期 / 自定义起止范围。以<b>数据快照日</b>（<code>D.updated</code>）为基准，例如快照 2026-11-19 时近 30 天即 2026-10-20 起；计数栏会显示当前范围与基准日。筛选同时作用于列表与导出的 CSV，重置按钮回到近 30 天。要看更早的新闻，需先用 <code>--window 0</code> 重新生成数据，页面才有可选条目。',
-  '<b>⑭ 历史累积</b>：每次抓取会与已有稿件按 URL 合并留存（同 URL 用新稿覆盖），不再整批覆盖，近一个月内各日期会随每日运行逐步补齐；过期稿仍由时间窗清理。需要「只看本次抓取」时用 <code>--fresh</code>。'
+  '<b>⑭ 历史累积</b>：每次抓取会与已有稿件按 URL 合并留存（同 URL 用新稿覆盖），不再整批覆盖，近一个月内各日期会随每日运行逐步补齐；过期稿仍由时间窗清理。需要「只看本次抓取」时用 <code>--fresh</code>。',
+  '<b>⑮ 媒体查询范围</b>：以中国网信网《互联网新闻信息服务单位许可信息》（2026-10-23，截至 2026-09-30 共 3657 家单位）为参考，其中「中央互联网新闻信息服务单位—互联网站」193 家名单已解析为 <code>assets/cac_media_registry.json</code>，作为<b>中央级</b>判定依据。每条稿件按中央 / 省级 / 地市级 / 区县级 / 其他标注级别，卡片显示级别标签；名称含区、县且带融媒体中心、新闻网、广电等标记的<b>区县级媒体默认过滤</b>，可用工具栏「媒体」下拉切换为全部或仅中央/省级，或在 <code>news_data.json</code> 的 <code>media_policy.filter_county_level</code> 关闭。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -1094,6 +1163,7 @@ function dateBounds(){
 }
 function filtered(){
   const db=dateBounds();
+  const ml=document.getElementById('fMediaLevel').value;
   const q=document.getElementById('q').value.trim().toLowerCase();
   const ty=document.getElementById('fType').value;
   const fo=fForm.value, bu=document.getElementById('fBucket').value;
@@ -1107,6 +1177,8 @@ function filtered(){
     if((db.lo||db.hi)&&!x.date)return false;
     if(db.lo&&x.date<db.lo)return false;
     if(db.hi&&x.date>db.hi)return false;
+    if(ml==='no_county'&&x.media_level==='区县级')return false;
+    if(ml==='central_provincial'&&x.media_level!=='中央'&&x.media_level!=='省级')return false;
     return true;
   });
   // 精选样本与实时抓取统一按日期排序，不再按批次分组（否则上周精选会压住今天的新稿）
@@ -1126,7 +1198,7 @@ function render(){
     const dupTag=dups.length?'<span class="tag" style="background:#eaf0ff;color:var(--blue);border:1px solid #c9d8ff">同题 '+dups.length+' 家</span>':'';
     const dupLine=dups.length?'<div class="desc">同题报道：'+dups.map(d=>'<a href="'+esc(d.url)+'" target="_blank" rel="noopener">'+esc(d.media)+'</a>').join(' · ')+'</div>':'';
     return '<div class="item">'
-      +'<div class="meta"><span class="badge b-'+esc(x.type)+'">'+esc(x.type)+'</span><br>'+esc(x.date)+'<br>'+esc(x.media)+'</div>'
+      +'<div class="meta"><span class="badge b-'+esc(x.type)+'">'+esc(x.type)+'</span><br>'+esc(x.date)+'<br>'+esc(x.media)+(x.media_level?' <span class="mlevel">'+esc(x.media_level)+'</span>':'')+'</div>'
       +'<div><a class="t" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.title)+'</a>'
       +'<div class="meta">'+esc(x.column||'')+(x.bucket==='实时抓取'?' · <span style="color:var(--blue)">实时抓取</span>':'')+'</div>'
       +(x.note?'<div class="desc">'+esc(x.note)+'</div>':'')
@@ -1152,7 +1224,7 @@ function stats(){
 }
 document.getElementById('export').onclick=()=>{
   const arr=filtered();
-  const cols=[['bucket','数据批次'],['date','日期'],['media','媒体'],['type','类型'],['column','栏目'],['form','报道形态'],['title','标题'],['topics','主题标签'],['url','链接'],['note','备注']];
+  const cols=[['bucket','数据批次'],['date','日期'],['media','媒体'],['media_level','媒体级别'],['type','类型'],['column','栏目'],['form','报道形态'],['title','标题'],['topics','主题标签'],['url','链接'],['note','备注']];
   const lines=[cols.map(c=>'"'+c[1]+'"').join(',')];
   arr.forEach(x=>lines.push(cols.map(c=>{let v=x[c[0]];if(Array.isArray(v))v=v.join(' / ');return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';}).join(',')));
   const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
@@ -1165,6 +1237,7 @@ document.getElementById('reset').onclick=()=>{
   document.getElementById('fBucket').value='';
   document.getElementById('fSort').value='time_desc';
   document.getElementById('fDateRange').value='30';
+  document.getElementById('fMediaLevel').value='no_county';
   document.getElementById('dateFrom').value='';
   document.getElementById('dateTo').value='';
   document.getElementById('dateFrom').style.display='none';
@@ -1172,7 +1245,7 @@ document.getElementById('reset').onclick=()=>{
   document.querySelectorAll('.chip.on').forEach(x=>x.classList.remove('on'));
   render();
 };
-['q','fType','fForm','fBucket','fSort','fDateRange','dateFrom','dateTo'].forEach(id=>{
+['q','fType','fForm','fBucket','fSort','fDateRange','dateFrom','dateTo','fMediaLevel'].forEach(id=>{
   const el=document.getElementById(id);
   el.addEventListener(id==='q'?'input':'change',()=>{
     if(id==='fDateRange'){
