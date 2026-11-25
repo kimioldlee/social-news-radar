@@ -206,6 +206,12 @@ FOCUS_FLUFF = (
     "怕辐射", "拖到肺癌", "呈年轻化",
     "误食后如何急救", "引发中毒", "打把小伞", "堵住心脏漏洞",
     "频繁头晕", "泰康医疗",
+    # 11-25 联网抓取后的政务/人物宣传、健康提醒与趣闻
+    "感谢信", "致广大市民", "盛情礼迎", "护航学生出行", "未佩戴头盔",
+    "麻疹疫情反弹", "中疾控", "保持警惕", "举报破坏鸟类", "最高奖励",
+    "飞天之路", "奔赴星辰", "斩获一金一铜", "奔赴新疆莎车", "站得很稳",
+    "实战大考", "急救队伍", "产教融合基地", "银杏叶", "做时装",
+    "韩国AI作弊", "高考作弊举报悬赏", "分你一半", "割一半肝",
     # 11-19 新抓到的暖闻 / 机构宣传 / 校园软闻 / 健康奇观 / 萌宠趣闻
     "合力救援", "公益活动", "心系骑手", "小针刀", "中医针刀",
     "俱乐部改革", "一站式学生社区", "中文说唱", "文化桥", "知翰奖",
@@ -1038,7 +1044,7 @@ footer{margin-top:30px;color:var(--muted);font-size:12px;border-top:1px solid va
 <div class="wrap">
 <header>
   <h1>官媒 &amp; 融媒体 · 社会民生新闻抓取看板</h1>
-  <div class="sub">采集范围：人民日报 / 新华社 / 央视网 / 工人日报等官媒，澎湃 / 封面 / 上游 / 九派 / 极目 / 红星 / 新京报 / 中国新闻周刊等融媒体｜重点：民生痛点、深度调查、舆论监督｜更新于 <span id="updated"></span>｜数据窗口 <span id="windowLabel"></span></div>
+  <div class="sub">范围：网信办许可名单（中央 193 家 + 32 个省级入口）｜重点：民生痛点、深度调查、舆论监督、社会争议｜区县级融媒默认过滤｜看板重建 <span id="updated"></span> · 最近抓取 <span id="lastCrawled"></span>｜数据窗口 <span id="windowLabel"></span></div>
 </header>
 
 <div class="stats" id="stats"></div>
@@ -1105,6 +1111,7 @@ const items = [];
 (D.crawled||[]).forEach(x=>items.push(Object.assign({},x,{bucket:'实时抓取'})));
 items.forEach((x,i)=>x._idx=i);
 document.getElementById('updated').textContent = D.updated || '';
+document.getElementById('lastCrawled').textContent = D.last_crawled || '—';
 document.getElementById('windowLabel').textContent = (D.window && D.window.label) ? D.window.label : '不限时间';
 // 浏览器可能记住旧的排序值；非法值一律回退到「最新优先」
 const sortEl=document.getElementById('fSort');
@@ -1246,18 +1253,22 @@ function render(){
   }).join('');
 }
 function stats(){
-  const n=items.length, gm=items.filter(x=>x.type==='官媒').length, rm=items.filter(x=>x.type==='融媒').length;
+  const n=items.length;
+  const central=items.filter(x=>x.media_level==='中央').length;
+  const local=items.filter(x=>['省级','地市级','其他'].includes(x.media_level)).length;
+  const county=items.filter(x=>x.media_level==='区县级').length;
   const deep=items.filter(x=>['深度调查','舆论监督'].includes(x.form)).length;
   const media=new Set(items.map(x=>x.media)).size;
-  const d=[['稿件总数',n],['官媒 / 央媒',gm],['融媒体 / 市场媒体',rm],['深度调查 · 舆论监督',deep]];
+  const d=[['稿件总数',n],['中央级媒体',central],['省级 / 地市级 / 其他',local],['深度调查 · 舆论监督',deep]];
   const ds=items.map(x=>x.date).filter(Boolean).sort();
   const span=ds.length?(ds[0]+' 至 '+ds[ds.length-1]):'—';
   const win=(D.window&&D.window.label)?D.window.label:'不限时间';
   const ded=(D.dedup&&D.dedup.merged)?' · 同题去重合并 '+D.dedup.merged+' 条 / '+D.dedup.clusters+' 个事件簇（阈值 '+D.dedup.threshold+'）':'';
   const fm=(D.forms)?' · 实时稿形态归类 '+D.forms.classified+' 条（'+D.forms.fallback+' 条兜底）':'';
   const fc=(D.focus&&D.focus.enabled)?' · 社会民生聚焦过滤 '+D.focus.excluded+' 条政务/宣传稿':'';
+  const ml=(D.media_policy&&D.media_policy.filter_county_level)?' · 媒体级别依据网信办许可名单，区县级融媒默认过滤（当前 '+county+' 条）':'';
   document.getElementById('stats').innerHTML=d.map(x=>'<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')
-    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条'+esc(ded)+esc(fm)+esc(fc)+'</span></div>';
+    +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条'+esc(ded)+esc(fm)+esc(fc)+esc(ml)+'</span></div>';
 }
 document.getElementById('export').onclick=()=>{
   const arr=filtered();
@@ -1414,9 +1425,14 @@ def main():
         "label": "近 {} 天（{} 起）".format(args.window, cutoff) if cutoff else "不限时间",
     }
 
+    previous_updated = data.get("updated", TODAY)
     if not args.no_fetch:
         data["crawled"] = crawl(data, args.days, args.max_per_source)
-        data["updated"] = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
+        data["last_crawled"] = TODAY
+    # updated = 看板/CSV 落盘时间（每次运行都刷新，含 --no-fetch 重建）；
+    # last_crawled = 最近一次真正联网抓取的时间，两者分开避免误以为数据抓过新的
+    data.setdefault("last_crawled", previous_updated)
+    data["updated"] = TODAY
 
     # 形态归类：每次运行都重算实时抓取稿，保证筛选分类随数据同步刷新；
     # 精选样本保留人工标注，不被规则覆盖
