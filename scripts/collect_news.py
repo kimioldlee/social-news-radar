@@ -268,6 +268,14 @@ def _load_central_registry():
 CENTRAL_NAMES, CENTRAL_DOMAINS = _load_central_registry()
 DEFAULT_COUNTY_MARKERS = ("融媒体中心", "融媒", "新闻网", "广播电视台", "传媒中心",
                           "发布", "政府网", "广电", "日报", "视听", "在线")
+# 网信办 193 家名单记的是「网站/服务名称」，稿件里的媒体名常是机构名或栏目名，
+# 需用别名子串补齐，否则「工人日报」「央视《焦点访谈》」「中国记协」会被判成省级。
+DEFAULT_CENTRAL_ALIASES = ("人民日报", "新华社", "新华网", "人民网", "央视",
+                           "央视网", "中央广播电视总台", "中国之声", "焦点访谈",
+                           "每周质量报告", "工人日报", "中工网", "中国网",
+                           "中国新闻网", "中国记协", "光明网", "中国新闻周刊",
+                           "国际在线", "中国日报网", "中国青年网", "中国经济网",
+                           "环球网", "中国网信网", "央广网", "求是网", "中国军网")
 DEFAULT_PROVINCIAL_MARKERS = ("人民日报", "新华社", "新华网", "央视", "中国新闻",
                               "工人日报", "中工网", "中国网", "中国记协", "日报",
                               "晚报", "晨报", "商报", "新闻网", "广播电视台", "卫视",
@@ -282,7 +290,9 @@ def media_level(name, url="", policy=None):
     n, u = name or "", (url or "").lower()
     county = p.get("county_markers") or DEFAULT_COUNTY_MARKERS
     provincial = p.get("provincial_markers") or DEFAULT_PROVINCIAL_MARKERS
-    if n in CENTRAL_NAMES or any(d in u for d in CENTRAL_DOMAINS):
+    aliases = p.get("central_aliases") or DEFAULT_CENTRAL_ALIASES
+    if (n in CENTRAL_NAMES or any(d in u for d in CENTRAL_DOMAINS)
+            or any(a in n for a in aliases)):
         return "中央"
     # 各省许可名单里大量「XX市融媒体中心」其实是县级市（如万宁市、琼海市、东方市），
     # 名称不含「区/县」。所有融媒体中心统一按区县级处理，避免这类基层融媒漏过过滤。
@@ -1257,16 +1267,17 @@ function stats(){
   const central=items.filter(x=>x.media_level==='中央').length;
   const local=items.filter(x=>['省级','地市级','其他'].includes(x.media_level)).length;
   const county=items.filter(x=>x.media_level==='区县级').length;
+  const centralMedia=new Set(items.filter(x=>x.media_level==='中央').map(x=>x.media)).size;
   const deep=items.filter(x=>['深度调查','舆论监督'].includes(x.form)).length;
   const media=new Set(items.map(x=>x.media)).size;
-  const d=[['稿件总数',n],['中央级媒体',central],['省级 / 地市级 / 其他',local],['深度调查 · 舆论监督',deep]];
+  const d=[['稿件总数',n],['中央级稿件',central],['省级 / 地市级 / 其他稿件',local],['深度调查 · 舆论监督',deep]];
   const ds=items.map(x=>x.date).filter(Boolean).sort();
   const span=ds.length?(ds[0]+' 至 '+ds[ds.length-1]):'—';
   const win=(D.window&&D.window.label)?D.window.label:'不限时间';
   const ded=(D.dedup&&D.dedup.merged)?' · 同题去重合并 '+D.dedup.merged+' 条 / '+D.dedup.clusters+' 个事件簇（阈值 '+D.dedup.threshold+'）':'';
   const fm=(D.forms)?' · 实时稿形态归类 '+D.forms.classified+' 条（'+D.forms.fallback+' 条兜底）':'';
   const fc=(D.focus&&D.focus.enabled)?' · 社会民生聚焦过滤 '+D.focus.excluded+' 条政务/宣传稿':'';
-  const ml=(D.media_policy&&D.media_policy.filter_county_level)?' · 媒体级别依据网信办许可名单，区县级融媒默认过滤（当前 '+county+' 条）':'';
+  const ml=(D.media_policy&&D.media_policy.filter_county_level)?' · 中央级稿件来自 '+centralMedia+' 个署名媒体 · 媒体级别依据网信办许可名单，区县级融媒默认过滤（当前 '+county+' 条）':'';
   document.getElementById('stats').innerHTML=d.map(x=>'<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')
     +'<div class="stat" style="grid-column:1/-1"><span>覆盖 '+media+' 家媒体 / 机构 · 时间跨度 '+esc(span)+' · 数据窗口 '+esc(win)+' · 数据批次：精选样本 '+((D.curated||[]).length)+' 条 + 实时抓取 '+((D.crawled||[]).length)+' 条'+esc(ded)+esc(fm)+esc(fc)+esc(ml)+'</span></div>';
 }
