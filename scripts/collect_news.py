@@ -278,7 +278,11 @@ def media_level(name, url="", policy=None):
     provincial = p.get("provincial_markers") or DEFAULT_PROVINCIAL_MARKERS
     if n in CENTRAL_NAMES or any(d in u for d in CENTRAL_DOMAINS):
         return "中央"
-    if re.search(r"[区县]", n) and any(k in n for k in county):
+    # 各省许可名单里大量「XX市融媒体中心」其实是县级市（如万宁市、琼海市、东方市），
+    # 名称不含「区/县」。所有融媒体中心统一按区县级处理，避免这类基层融媒漏过过滤。
+    if ("融媒体中心" in n or "融媒" in n) or (
+        re.search(r"[区县]", n) and any(k in n for k in county)
+    ):
         return "区县级"
     if "市" in n and any(k in n for k in provincial):
         return "地市级"
@@ -1143,12 +1147,14 @@ provItems.forEach(p=>{
   const a=document.createElement('a');
   a.href=p.url;a.target='_blank';a.rel='noopener';
   let label=p.name;
-  if(p.status!=='200'){a.className='warn';label+=' ⚠';}
+  if(p.status==='browser'){a.className='warn';label+=' ·浏览器';}
+  else if(p.status!=='200'){a.className='warn';label+=' ⚠';}
   else if(/mp\.weixin\.qq\.com/.test(p.url)){a.className='wx';label+=' ·微信';}
   a.textContent=label;
-  const bits=[p.title||''];
-  if(p.status!=='200')bits.push('探测异常 '+p.status);
+  const bits=[p.title||'',p.note||''];
+  if(p.status!=='200')bits.push('状态 '+p.status);
   if(p.attachments&&p.attachments!=='0')bits.push('附件 '+p.attachments+' 个');
+  bits.push(p.url);
   a.title=bits.filter(Boolean).join(' ｜ ');
   provBox.appendChild(a);
 });
@@ -1170,7 +1176,7 @@ document.getElementById('howto').innerHTML = [
   '<b>⑬ 日期筛选</b>：工具栏日期下拉默认「<b>近 30 天（一个月）</b>」，可切近 7 天 / 近 90 天 / 全部日期 / 自定义起止范围。以<b>数据快照日</b>（<code>D.updated</code>）为基准，例如快照 2026-11-19 时近 30 天即 2026-10-20 起；计数栏会显示当前范围与基准日。筛选同时作用于列表与导出的 CSV，重置按钮回到近 30 天。要看更早的新闻，需先用 <code>--window 0</code> 重新生成数据，页面才有可选条目。',
   '<b>⑭ 历史累积</b>：每次抓取会与已有稿件按 URL 合并留存（同 URL 用新稿覆盖），不再整批覆盖，近一个月内各日期会随每日运行逐步补齐；过期稿仍由时间窗清理。需要「只看本次抓取」时用 <code>--fresh</code>。',
   '<b>⑮ 媒体查询范围</b>：以中国网信网《互联网新闻信息服务单位许可信息》（2026-10-23，截至 2026-09-30 共 3657 家单位）为参考，其中「中央互联网新闻信息服务单位—互联网站」193 家名单已解析为 <code>assets/cac_media_registry.json</code>，作为<b>中央级</b>判定依据。每条稿件按中央 / 省级 / 地市级 / 区县级 / 其他标注级别，卡片显示级别标签；名称含区、县且带融媒体中心、新闻网、广电等标记的<b>区县级媒体默认过滤</b>，可用工具栏「媒体」下拉切换为全部或仅中央/省级，或在 <code>news_data.json</code> 的 <code>media_policy.filter_county_level</code> 关闭。',
-  '<b>⑯ 省级名单入口</b>：「持续抓取入口」下方的「📋 网信办省级媒体许可名单」是可折叠面板，点击展开后逐个跳转到 31 省 + 新疆生产建设兵团共 <b>32 个</b>公示页（2026-11-25 轻量探测：30 个返回 200，海南 SSL 异常、宁夏 HTTP 412；6 个为微信公众号文章，山西与甘肃页面带附件）。这些页面只用于人工查阅媒体范围，<b>不自动抓取、不下载全文</b>，也不替代中央 193 家白名单。悬停可看页面标题与附件数，橙色边框表示探测异常。'
+  '<b>⑯ 省级名单入口</b>：「持续抓取入口」下方的「📋 网信办省级媒体许可名单」是可折叠面板，点击展开后逐个跳转到 31 省 + 新疆生产建设兵团共 <b>32 个</b>公示页（2026-11-25 复测：<b>31 个返回 200</b>，海南换完整浏览器头后本地可读；宁夏链接有效但站点有 WAF/JS 挑战，点击后需在浏览器内查看；6 个为微信公众号文章，山西与甘肃页面带附件）。海南公示名单含 20 余个区县及<b>县级市</b>融媒体中心，已用于校准区县级过滤规则（所有「融媒体中心」统一按区县级处理）。这些页面只用于人工查阅媒体范围，<b>不自动抓取、不下载全文</b>，也不替代中央 193 家白名单。悬停可看标题、说明、附件数与完整 URL，橙色边框表示需浏览器或探测异常。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
