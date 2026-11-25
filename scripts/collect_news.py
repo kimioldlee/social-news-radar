@@ -660,7 +660,11 @@ def parse_link_list(body, source):
                 date = "{}-{}-{}".format(m.group(1), m.group(2), m.group(3))
         if not date:
             date = date_from_relative(tail)
-        it = make_item(source, title, url, date=date)
+        # 名单批量源多从首页取链接，URL/邻近文本常无发布日期；如实标注，避免被当成当日发布
+        note = ""
+        if source.get("note_suffix") and not date:
+            note = "实时抓取自 {}｜{}".format(source.get("name", ""), source["note_suffix"])
+        it = make_item(source, title, url, date=date, note=note)
         if it and url not in seen:
             seen.add(url)
             items.append(it)
@@ -862,7 +866,9 @@ def crawl(data, days, max_per_source):
         kind = src.get("parser") or legacy.get(src.get("type"), "homepage")
         parser = PARSERS.get(kind, parse_homepage)
         print("→ 抓取 {} [{}]".format(src["name"], kind))
-        body = fetch(src["url"])
+        # 名单批量源是跨域轻量探测，用短超时、不重试，避免个别站点拖慢整轮
+        light = bool(src.get("light"))
+        body = fetch(src["url"], timeout=5 if light else 15, retry=0 if light else 1)
         if not body:
             continue
         got = [x for x in parser(body, src) if x]
@@ -877,7 +883,7 @@ def crawl(data, days, max_per_source):
         got = got[:src.get("max_items", max_per_source)]
         print("   {} 条".format(len(got)))
         fresh.extend(got)
-        time.sleep(1.2)
+        time.sleep(0.25 if src.get("light") else 1.2)
     # 去重：URL 精确去重 + 标题归一化模糊去重（同一事件多家转载只留一条）
     seen_url, seen_title, out = set(), set(), []
     for x in fresh:
@@ -1125,6 +1131,12 @@ footer{margin-top:30px;color:var(--muted);font-size:12px;border-top:1px solid va
   <div class="desc" id="provNote" style="margin-top:10px"></div>
 </details>
 
+<details class="panel prov-panel" id="mediaPanel">
+  <summary>📡 媒体接入清单 <span id="mediaSummary" style="font-size:12px;font-weight:400;color:var(--muted)"></span></summary>
+  <div id="mediaLinks" style="margin-top:12px"></div>
+  <div class="desc" id="mediaNote" style="margin-top:10px"></div>
+</details>
+
 <div class="sec-title">民生痛点关键词表 <span style="font-size:12px;font-weight:400;color:var(--muted)">（点击填入搜索框）</span></div>
 <div class="panel" id="keywords"></div>
 
@@ -1198,6 +1210,28 @@ provItems.forEach(p=>{
 });
 document.getElementById('provNote').textContent=provData.note||'';
 
+// 媒体接入清单：国家网信办许可名单里的全部互联网站，点击直达站点
+const regSrc=(D.sources||[]).filter(s=>s.registry_level);
+const regOn=regSrc.filter(s=>s.enabled).length;
+document.getElementById('mediaSummary').textContent='（点击展开，'+regSrc.length+' 家许可媒体 · '+regOn+' 家启用采集 · 区县级融媒已排除）';
+const mediaBox=document.getElementById('mediaLinks');
+const byLevel={};
+regSrc.forEach(s=>{(byLevel[s.registry_level]=byLevel[s.registry_level]||[]).push(s);});
+Object.keys(byLevel).forEach(lv=>{
+  const g=document.createElement('div');g.className='kwgroup';
+  g.innerHTML='<b>'+esc(lv)+'（'+byLevel[lv].length+' 家）</b>';
+  const box=document.createElement('div');box.className='links';
+  byLevel[lv].forEach(s=>{
+    const a=document.createElement('a');a.href=s.url;a.target='_blank';a.rel='noopener';
+    a.textContent=s.media;
+    if(!s.enabled){a.className='warn';a.textContent+=' ⚠';}
+    a.title=s.probe_note||'';
+    box.appendChild(a);
+  });
+  g.appendChild(box);mediaBox.appendChild(g);
+});
+document.getElementById('mediaNote').textContent='来源：国家网信办许可名单（中央 193 家 + 其他单位 27 家互联网站）。区县级融媒体中心不在该名单内，且由 media_policy 默认过滤；站点不可达或无可用中文列表页的保留登记、不启用采集，橙色标注。';
+
 document.getElementById('howto').innerHTML = [
   '<b>① 内容链路</b>：官媒原发深度稿（央视网《救命血，为何一血难求？》）→ 平台号/融媒体同步（澎湃号·媒体）→ 多家融媒跟进通报与个案。找同类稿要同时盯「原发」和「转载」两端。',
   '<b>② 最高性价比入口</b>：中国记协「我的代表作」每周一更新，集中收录央媒与地方融媒的深度报道、舆论监督稿；澎湃站内搜索 <code>searchResult?id=关键词</code> 的每条结果都标注所属栏目，可反查栏目。',
@@ -1215,7 +1249,8 @@ document.getElementById('howto').innerHTML = [
   '<b>⑭ 历史累积</b>：每次抓取会与已有稿件按 URL 合并留存（同 URL 用新稿覆盖），不再整批覆盖，近一个月内各日期会随每日运行逐步补齐；过期稿仍由时间窗清理。需要「只看本次抓取」时用 <code>--fresh</code>。',
   '<b>⑮ 媒体查询范围</b>：以中国网信网《互联网新闻信息服务单位许可信息》（2026-10-23，截至 2026-09-30 共 3657 家单位）为参考，其中「中央互联网新闻信息服务单位—互联网站」193 家名单已解析为 <code>assets/cac_media_registry.json</code>，作为<b>中央级</b>判定依据。每条稿件按中央 / 省级 / 地市级 / 区县级 / 其他标注级别，卡片显示级别标签；名称含区、县且带融媒体中心、新闻网、广电等标记的<b>区县级媒体默认过滤</b>，可用工具栏「媒体」下拉切换为全部或仅中央/省级，或在 <code>news_data.json</code> 的 <code>media_policy.filter_county_level</code> 关闭。',
   '<b>⑯ 省级名单入口</b>：「持续抓取入口」下方的「📋 网信办省级媒体许可名单」是可折叠面板，点击展开后逐个跳转到 31 省 + 新疆生产建设兵团共 <b>32 个</b>公示页（2026-11-25 复测：<b>31 个返回 200</b>，海南换完整浏览器头后本地可读；宁夏链接有效但站点有 WAF/JS 挑战，点击后需在浏览器内查看；6 个为微信公众号文章，山西与甘肃页面带附件）。海南公示名单含 20 余个区县及<b>县级市</b>融媒体中心，已用于校准区县级过滤规则（所有「融媒体中心」统一按区县级处理）。这些页面只用于人工查阅媒体范围，<b>不自动抓取、不下载全文</b>，也不替代中央 193 家白名单。悬停可看标题、说明、附件数与完整 URL，橙色边框表示需浏览器或探测异常。',
-  '<b>⑰ 其他互联网新闻信息服务单位</b>：网信办许可信息除「中央互联网新闻信息服务单位」外，还有「<b>其他互联网新闻信息服务单位</b>」。其互联网站名单（<b>27 个</b>：新浪、网易、搜狐、百度、腾讯网、微博、今日头条、抖音、快手、知乎、观察者网、喜马拉雅等）已解析进 <code>assets/cac_media_registry.json</code> 的 <code>other_websites</code>，命中媒体名标为「国家许可平台」，纳入「仅中央/国家许可/省级」筛选与底部统计；「持续抓取入口」新增三个可点击名单链接（总索引 / 中央 193 / 其他 27）。<b>只按媒体名称判定，不按转载 URL 改判</b>，避免把省级媒体转载到头条、网易的稿件误算成平台稿。应用程序、公众账号等其他服务形式的名单链接已记录，可按需继续扩展。'
+  '<b>⑰ 其他互联网新闻信息服务单位</b>：网信办许可信息除「中央互联网新闻信息服务单位」外，还有「<b>其他互联网新闻信息服务单位</b>」。其互联网站名单（<b>27 个</b>：新浪、网易、搜狐、百度、腾讯网、微博、今日头条、抖音、快手、知乎、观察者网、喜马拉雅等）已解析进 <code>assets/cac_media_registry.json</code> 的 <code>other_websites</code>，命中媒体名标为「国家许可平台」，纳入「仅中央/国家许可/省级」筛选与底部统计；「持续抓取入口」新增三个可点击名单链接（总索引 / 中央 193 / 其他 27）。<b>只按媒体名称判定，不按转载 URL 改判</b>，避免把省级媒体转载到头条、网易的稿件误算成平台稿。应用程序、公众账号等其他服务形式的名单链接已记录，可按需继续扩展。',
+  '<b>⑱ 全量媒体接入</b>：国家网信办许可名单里的 <b>220 家互联网站</b>（中央 193 + 其他单位 27）已全部登记为接入媒体，逐个轻量探测后 <b>129 家</b>有可用中文新闻列表页并启用采集（另 91 家因站点不可达或无列表页保留登记、不启用）。「📡 媒体接入清单」面板可点击展开，按中央 / 国家许可平台分组直达站点，橙色表示暂未启用。批量源用严格的社会民生标题准入、单源最多 2 条、短超时且不重试；<b>区县级融媒体中心不在该名单内，且继续由 <code>media_policy</code> 默认过滤</b>。各省网信办名单中的省级/地市级媒体仍需逐省解析，本轮未逐站接入。'
 ].join('<br><br>');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -1293,12 +1328,13 @@ function stats(){
   const platform=items.filter(x=>x.media_level==='国家许可平台').length;
   const deep=items.filter(x=>['深度调查','舆论监督'].includes(x.form)).length;
   const media=new Set(items.map(x=>x.media)).size;
-  const srcs=(D.sources||[]).filter(s=>s.enabled);
+  const allSrc=(D.sources||[]), srcs=allSrc.filter(s=>s.enabled);
+  const allMedia=new Set(allSrc.map(s=>s.media).filter(Boolean)).size;
   const srcMedia=new Set(srcs.map(s=>s.media).filter(Boolean)).size;
   const mp=D.media_policy||{};
   const wl=(mp.central_website_count||0)+(mp.other_platform_count||0);
   const provCount=(D.provincial_registries||{}).count||0;
-  const srcInfo='接入 '+srcs.length+' 个栏目源 / '+srcMedia+' 家媒体 · 稿件署名 '+media+' 个（含联合署名） · 名单白名单 '+wl+' 家网站（中央 '+(mp.central_website_count||0)+' + 其他单位 '+(mp.other_platform_count||0)+'） · 省级名单入口 '+provCount+' 个';
+  const srcInfo='登记 '+allMedia+' 家媒体（'+srcMedia+' 家启用采集 / '+srcs.length+' 个启用源） · 稿件署名 '+media+' 个（含联合署名） · 名单白名单 '+wl+' 家网站（中央 '+(mp.central_website_count||0)+' + 其他单位 '+(mp.other_platform_count||0)+'） · 省级名单入口 '+provCount+' 个';
   const d=[['稿件总数',n],['中央级稿件',central],['省级 / 地市级 / 其他稿件',local],['深度调查 · 舆论监督',deep]];
   const ds=items.map(x=>x.date).filter(Boolean).sort();
   const span=ds.length?(ds[0]+' 至 '+ds[ds.length-1]):'—';
